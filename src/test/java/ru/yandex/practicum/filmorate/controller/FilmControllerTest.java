@@ -1,31 +1,34 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.google.gson.Gson;
-
-import com.google.gson.GsonBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.utils.FilmsListTypeToken;
-import ru.yandex.practicum.filmorate.model.utils.LocalDateTypeAdapter;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FilmControllerTest {
-    private final HttpClient client = HttpClient.newHttpClient();
-    private final Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter()).create();
-    private final URI url = URI.create("http://localhost:8080/films");
+    private Validator validator;
+    private FilmController controller;
 
+    @BeforeEach
+    void setUp() {
+        validator = Validation.buildDefaultValidatorFactory().getValidator();
+        controller = new FilmController();
+    }
 
     @Test
     void filmCreate201() throws Exception {
@@ -34,33 +37,46 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
+        Film filmCreated = controller.create(film);
 
+        assertFalse(controller.getFilmsDB().isEmpty());
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
+        Set<ConstraintViolation<Film>> violations = validator.validate(filmCreated);
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertTrue(violations.isEmpty());
 
-        assertEquals(201, response.statusCode());
     }
 
     @Test
-    void filmCreateFailName() throws Exception {
+    void filmCreateFailNameBlack() throws Exception {
         Film film = Film.builder().name("")
                 .description("adipisicing")
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Имя не может быть пустым.");
+    }
+
+    @Test
+    void filmCreateFailNameNull() throws Exception {
+        Film film = Film.builder().name(null)
+                .description("adipisicing")
+                .releaseDate(LocalDate.of(1967, 3, 25))
+                .duration(100).build();
 
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(400, response.statusCode());
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Имя не может быть пустым.");
     }
 
     @Test
@@ -73,15 +89,57 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Максимум для описания 200 символов.");
+    }
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
+    @Test
+    void filmCreateFailDescriptionNull() throws Exception {
+        Film film = Film.builder().name("name")
+                .description(null)
+                .releaseDate(LocalDate.of(1967, 3, 25))
+                .duration(100).build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        assertEquals(400, response.statusCode());
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Описание не может быть null.");
+    }
+
+    @Test
+    void filmCreateFailReleaseDateNull() throws Exception {
+        Film film = Film.builder().name("name")
+                .description("description")
+                .releaseDate(null)
+                .duration(100).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Дата выпуска не может быть null.");
+    }
+
+    @Test
+    void filmCreateFailDurationNull() throws Exception {
+        Film film = Film.builder().name("name")
+                .description("description")
+                .releaseDate(LocalDate.of(1967, 3, 25))
+                .duration(null).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Продолжительность не может быть null.");
     }
 
     @Test
@@ -91,15 +149,9 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1890, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
-
-
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(500, response.statusCode());
+        assertThrows(ValidationException.class, () -> {
+            controller.create(film);
+        }, "Максимум для описания 200 символов.");
     }
 
     @Test
@@ -109,15 +161,13 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(-100).build();
 
-        String jsonBody = gson.toJson(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Продолжительность не может быть отрицательной.");
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(500, response.statusCode());
     }
 
 
@@ -128,57 +178,33 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
+        Film film2 = Film.builder().name("nisi eiusmod 2")
+                .description("adipisicing")
+                .releaseDate(LocalDate.of(1969, 3, 25))
+                .duration(120).build();
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
+        controller.create(film);
+        controller.create(film2);
 
-        client.send(request, HttpResponse.BodyHandlers.ofString());
+        List<Film> films = controller.getAll().stream().toList();
 
-        HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-        HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-        List<Film> films = gson.fromJson(getResponse.body(), new FilmsListTypeToken().getType());
-
-        assertEquals("nisi eiusmod", films.get(0).getName(), "Некорректное имя задачи");
+        assertEquals(2, films.size());
     }
 
 
     @Test
-    void filmUpdate() throws Exception {
-        Film film = Film.builder().name("nisi eiusmod")
+    void filmUpdateFailId() throws Exception {
+        Film updatedFilm = Film.builder().id(null).name("nisi eiusmod")
                 .description("adipisicing")
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(updatedFilm, ValidationMarker.OnUpdate.class);
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-        client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-        HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-        List<Film> films = gson.fromJson(getResponse.body(), new FilmsListTypeToken().getType());
-
-        Film oldFilm = films.get(0);
-
-        Film updatedFilm = Film.builder().name("Heat")
-                .id(oldFilm.getId()).description(oldFilm.getDescription())
-                .releaseDate(oldFilm.getReleaseDate())
-                .duration(oldFilm.getDuration())
-                .build();
-
-        String jsonUpdatedFilm = gson.toJson(updatedFilm);
-
-        HttpRequest putRequest = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(jsonUpdatedFilm)).build();
-
-        HttpResponse<String> putResponse = client.send(putRequest, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(200, putResponse.statusCode());
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Не указан id");
     }
 
     @Test
@@ -188,33 +214,45 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        String jsonBody = gson.toJson(film);
-
-        HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-        client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-        HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-        List<Film> films = gson.fromJson(getResponse.body(), new FilmsListTypeToken().getType());
-
-        Film oldFilm = films.get(0);
+        controller.create(film);
 
         Film updatedFilm = Film.builder().name("Heat")
-                .id(20L).description(oldFilm.getDescription())
-                .releaseDate(oldFilm.getReleaseDate())
-                .duration(oldFilm.getDuration())
+                .id(20L).description(film.getDescription())
+                .releaseDate(film.getReleaseDate())
+                .duration(film.getDuration())
                 .build();
 
-        String jsonUpdatedFilm = gson.toJson(updatedFilm);
-
-        HttpRequest putRequest = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(jsonUpdatedFilm)).build();
-
-        HttpResponse<String> putResponse = client.send(putRequest, HttpResponse.BodyHandlers.ofString());
-
-        assertEquals(500, putResponse.statusCode());
+        assertThrows(ValidationException.class, () -> {
+            controller.update(updatedFilm);
+        }, "Фильм не найден!");
     }
+
+    @Test
+    void filmCreateMinReleaseDate() throws Exception {
+        Film film = Film.builder().name("Valid name")
+                .description("Valid description")
+                .releaseDate(LocalDate.of(1895, 12, 28))
+                .duration(100).build();
+
+        Film createdFilm = controller.create(film);
+
+        assertNotNull(createdFilm);
+        assertEquals(LocalDate.of(1895, 12, 28), createdFilm.getReleaseDate());
+    }
+
+    @Test
+    void filmCreateFailDescriptionBlank() throws Exception {
+        Film film = Film.builder().name("Valid name")
+                .description("")
+                .releaseDate(LocalDate.of(1967, 3, 25))
+                .duration(100).build();
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+
+        assertFalse(violations.isEmpty());
+        assertThat(violations).hasSize(1);
+        assertThat(violations).extracting(ConstraintViolation::getMessage)
+                .containsExactlyInAnyOrder("Описание не может быть null.");
+    }
+
 }

@@ -1,222 +1,200 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.utils.LocalDateTypeAdapter;
-import ru.yandex.practicum.filmorate.model.utils.UsersListTypeToken;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserControllerTest {
-	private final HttpClient client = HttpClient.newHttpClient();
-	private final Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter()).create();
-	private final URI url = URI.create("http://localhost:8080/users");
-
-	@Autowired
-	private UserController userController;
+	private Validator validator;
+	private UserController controller;
 
 	@BeforeEach
-	void setup() {
-		userController.users.clear();
+	void setUp() {
+		validator = Validation.buildDefaultValidatorFactory().getValidator();
+		controller = new UserController();
 	}
 
 	@Test
 	void userCreate201() throws Exception {
-		User user = User.builder().login("login")
-				.email("mail@mail.ru")
-				.name("Nick Name")
-				.birthday(LocalDate.of(1946, 8, 20))
+		User user = User.builder()
+				.email("test@mail.com")
+				.login("testUser")
+				.name("Test Name")
+				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		String jsonBody = gson.toJson(user);
+		User userCreated = controller.create(user);
 
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
+		assertFalse(controller.users.isEmpty());
 
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+		Set<ConstraintViolation<User>> violations = validator.validate(userCreated);
 
-		assertEquals(201, response.statusCode());
+		assertTrue(violations.isEmpty());
 	}
 
 	@Test
-	void userCreateFailLogin() throws Exception {
-		User user = User.builder().login("")
-				.email("mail@mail.ru")
-				.birthday(LocalDate.of(1946, 8, 20))
+	void userCreateFailEmailInvalid() throws Exception {
+		User user = User.builder()
+				.email("invalid-email")
+				.login("testUser")
+				.name("Test Name")
+				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		String jsonBody = gson.toJson(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(400, response.statusCode());
+		assertFalse(violations.isEmpty());
+		assertThat(violations).hasSize(1);
+		assertThat(violations).extracting(ConstraintViolation::getMessage)
+				.containsExactlyInAnyOrder("Некорректный формат email.");
 	}
 
 	@Test
-	void userCreateFailBirthday() throws Exception {
-		User user = User.builder().login("dolore")
-				.email("mail@mail.ru")
-				.birthday(LocalDate.of(2446, 8, 20))
+	void userCreateFailEmailBlank() throws Exception {
+		User user = User.builder()
+				.email("")
+				.login("testUser")
+				.name("Test Name")
+				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		String jsonBody = gson.toJson(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(500, response.statusCode());
+		assertFalse(violations.isEmpty());
+		assertThat(violations).hasSize(1);
+		assertThat(violations).extracting(ConstraintViolation::getMessage)
+				.containsExactlyInAnyOrder("Email не может быть null.");
 	}
 
 	@Test
-	void userCreateFailEmail() throws Exception {
-		User user = User.builder().login("dolore")
-				.email("mail.ru")
-				.birthday(LocalDate.of(1996, 8, 20))
+	void userCreateFailLoginBlank() throws Exception {
+		User user = User.builder()
+				.email("test@mail.com")
+				.login("")
+				.name("Test Name")
+				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		String jsonBody = gson.toJson(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-		HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(400, response.statusCode());
+		assertFalse(violations.isEmpty());
+		assertThat(violations).hasSize(2);
+		assertThat(violations).extracting(ConstraintViolation::getMessage)
+				.containsExactlyInAnyOrder("Логин не должен содержать пробелы.",
+						"Логин не может быть пустым.");
 	}
 
 	@Test
-	void userCreateWithEmptyName() throws Exception {
-		User user = User.builder().login("dolore")
-				.email("mail@mail.ru")
-				.birthday(LocalDate.of(1996, 8, 20))
+	void userCreateFailLoginWithSpaces() throws Exception {
+		User user = User.builder()
+				.email("test@mail.com")
+				.login("test user")
+				.name("Test Name")
+				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		String jsonBody = gson.toJson(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-		HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-		List<User> users = gson.fromJson(getResponse.body(), new UsersListTypeToken().getType());
-
-		assertEquals(user.getLogin(), users.get(0).getName());
+		assertFalse(violations.isEmpty());
+		assertThat(violations).hasSize(1);
+		assertThat(violations).extracting(ConstraintViolation::getMessage)
+				.containsExactlyInAnyOrder("Логин не должен содержать пробелы.");
 	}
 
+	@Test
+	void userCreateFailBirthdayInFuture() throws Exception {
+		User user = User.builder()
+				.email("test@mail.com")
+				.login("testUser")
+				.name("Test Name")
+				.birthday(LocalDate.of(2050, 5, 15))
+				.build();
+
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+		assertFalse(violations.isEmpty());
+		assertThat(violations).hasSize(1);
+		assertThat(violations).extracting(ConstraintViolation::getMessage)
+				.containsExactlyInAnyOrder("Дата рождения не может быть в будущем");
+	}
+
+	@Test
+	void userUpdateFailIdNull() throws Exception {
+		User updatedUser = User.builder().id(null)
+				.email("updated@mail.com")
+				.login("updatedUser")
+				.name("Updated Name")
+				.birthday(LocalDate.of(1990, 5, 15))
+				.build();
+
+		Set<ConstraintViolation<User>> violations = validator.validate(updatedUser, ValidationMarker.OnUpdate.class);
+
+		assertFalse(violations.isEmpty());
+		assertThat(violations).hasSize(1);
+		assertThat(violations).extracting(ConstraintViolation::getMessage)
+				.containsExactlyInAnyOrder("Не указан id");
+	}
+
+	@Test
+	void userUpdateFailUnknownId() throws Exception {
+		User user = User.builder().email("test@mail.com")
+				.login("testUser")
+				.name("Test Name")
+				.birthday(LocalDate.of(1990, 5, 15))
+				.build();
+
+		controller.create(user);
+
+		User updatedUser = User.builder()
+				.id(20L) // Non-existing ID
+				.email("updated@mail.com")
+				.login("updatedUser")
+				.name("Updated Name")
+				.birthday(LocalDate.of(1990, 5, 15))
+				.build();
+
+		assertThrows(ValidationException.class, () -> {
+			controller.update(updatedUser);
+		}, "Пользователь не найден!");
+	}
 
 	@Test
 	void userGetAll() throws Exception {
-		User user = User.builder().login("dolore")
-				.email("mail@mail.ru")
-				.birthday(LocalDate.of(1996, 8, 20))
+		User user1 = User.builder()
+				.email("test1@mail.com")
+				.login("testUser1")
+				.name("Test Name 1")
+				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		String jsonBody = gson.toJson(user);
-
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-		HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-		List<User> films = gson.fromJson(getResponse.body(), new UsersListTypeToken().getType());
-
-		assertEquals(user.getLogin(), films.get(0).getLogin());
-	}
-
-
-	@Test
-	void userUpdate() throws Exception {
-		User user = User.builder().login("dolore")
-				.email("mail@mail.ru")
-				.birthday(LocalDate.of(1996, 8, 20))
+		User user2 = User.builder()
+				.email("test2@mail.com")
+				.login("testUser2")
+				.name("Test Name 2")
+				.birthday(LocalDate.of(1991, 6, 16))
 				.build();
 
-		String jsonBody = gson.toJson(user);
+		controller.create(user1);
+		controller.create(user2);
 
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
+		List<User> users = controller.getAll().stream().toList();
 
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-		HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-		List<User> users = gson.fromJson(getResponse.body(), new UsersListTypeToken().getType());
-
-		User oldUser = users.get(0);
-
-		User updatedUser = User.builder().login("newlogin")
-						.id(oldUser.getId()).birthday(oldUser.getBirthday())
-						.name(oldUser.getName()).build();
-
-		String jsonUpdatedUser = gson.toJson(updatedUser);
-
-		HttpRequest putRequest = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.PUT(HttpRequest.BodyPublishers.ofString(jsonUpdatedUser)).build();
-
-		HttpResponse<String> putResponse = client.send(putRequest, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(200, putResponse.statusCode());
-	}
-
-	@Test
-	void userUpdateFailUnknown() throws Exception {
-		User user = User.builder().login("dolore")
-				.email("mail@mail.ru")
-				.birthday(LocalDate.of(1996, 8, 20))
-				.build();
-
-		String jsonBody = gson.toJson(user);
-
-		HttpRequest request = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(jsonBody)).build();
-
-		client.send(request, HttpResponse.BodyHandlers.ofString());
-
-		HttpRequest getRequest = HttpRequest.newBuilder().uri(url).GET().build();
-		HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
-
-		List<User> users = gson.fromJson(getResponse.body(), new UsersListTypeToken().getType());
-
-		User oldUser = users.get(0);
-
-		User updatedUser = User.builder().login("newlogin")
-				.id(20L).birthday(oldUser.getBirthday())
-				.name(oldUser.getName()).build();
-
-		String jsonUpdatedFilm = gson.toJson(updatedUser);
-
-		HttpRequest putRequest = HttpRequest.newBuilder().uri(url).header("Content-Type", "application/json")
-				.PUT(HttpRequest.BodyPublishers.ofString(jsonUpdatedFilm)).build();
-
-		HttpResponse<String> putResponse = client.send(putRequest, HttpResponse.BodyHandlers.ofString());
-
-		assertEquals(500, putResponse.statusCode());
+		assertEquals(2, users.size());
 	}
 }

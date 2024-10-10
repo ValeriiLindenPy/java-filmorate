@@ -3,8 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -26,6 +28,7 @@ public class FilmController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Validated(ValidationMarker.OnCreate.class)
     public Film create(@Valid @RequestBody Film film) {
         log.trace("check release date");
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
@@ -45,6 +48,7 @@ public class FilmController {
     }
 
     @PutMapping
+    @Validated(ValidationMarker.OnUpdate.class)
     public Film update(@Valid @RequestBody Film newFilm) {
         log.trace("check new film if for null");
         if (newFilm.getId() == null) {
@@ -55,14 +59,8 @@ public class FilmController {
         if (films.containsKey(newFilm.getId())) {
             log.debug("making instance of old film");
             Film oldFilm = films.get(newFilm.getId());
-            log.debug("validate name of the film");
-            if (oldFilm.getName() != newFilm.getName() && films.values().stream()
-                    .anyMatch(film -> film.getName().equals(newFilm.getName()))) {
-                log.warn("film with name {} is already in films", newFilm.getName());
-                throw new ValidationException("Фильм с таким названием уже есть!");
-            }
             log.trace("add film in films");
-            films.put(newFilm.getId(), newFilm);
+            films.put(oldFilm.getId(), newFilm);
             return newFilm;
         }
         log.warn("film with id - {} is not found", newFilm.getId());
@@ -75,5 +73,9 @@ public class FilmController {
                 .max()
                 .orElse(0);
         return ++currentId;
+    }
+
+    public Map<Long, Film> getFilmsDB() {
+        return films;
     }
 }
