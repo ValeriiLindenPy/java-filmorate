@@ -26,8 +26,7 @@ public class FilmController {
     }
 
     @PostMapping
-    @Validated(ValidationMarker.OnCreate.class)
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@Validated(ValidationMarker.OnCreate.class) @Valid @RequestBody Film film) {
 
         log.trace("Check release date");
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
@@ -44,8 +43,7 @@ public class FilmController {
 
 
     @PutMapping
-    @Validated(ValidationMarker.OnUpdate.class)
-    public Film update(@Valid @RequestBody Film newFilm) {
+    public Film update(@Validated(ValidationMarker.OnUpdate.class) @Valid @RequestBody Film newFilm) {
         log.trace("check if new film id is in films");
         if (films.containsKey(newFilm.getId())) {
             log.debug("making instance of old film");

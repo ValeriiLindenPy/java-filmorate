@@ -26,8 +26,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Validated(ValidationMarker.OnCreate.class)
-    public User create(@Valid @RequestBody User user) {
+    public User create(@Validated(ValidationMarker.OnCreate.class) @Valid @RequestBody User user) {
         log.trace("check user name.");
         if (user.getName() == null || user.getName().isBlank()) {
             log.debug("Name is empty - set login as name.");
@@ -41,20 +40,13 @@ public class UserController {
     }
 
     @PutMapping
-    @Validated(ValidationMarker.OnUpdate.class)
-    public User update(@Valid @RequestBody User newUser) {
+    public User update(@Validated(ValidationMarker.OnUpdate.class) @Valid @RequestBody User newUser) {
         log.trace("check if user id in users");
         if (users.containsKey(newUser.getId())) {
             log.debug("making old user ref.");
             User oldUser = users.get(newUser.getId());
-            log.debug("check new login is already in users");
-            if (!oldUser.getLogin().equals(newUser.getLogin())  && users.values().stream()
-                    .anyMatch(user -> user.getLogin().equals(newUser.getLogin()))) {
-                log.warn("User with login {} is already in users", newUser.getLogin());
-                throw new ValidationException("Пользователь с таким логином уже есть!");
-            }
             log.trace("add new user in users");
-            users.put(newUser.getId(), newUser);
+            users.put(oldUser.getId(), newUser);
             return newUser;
         }
         throw new ValidationException("Пользователь не найден!");
