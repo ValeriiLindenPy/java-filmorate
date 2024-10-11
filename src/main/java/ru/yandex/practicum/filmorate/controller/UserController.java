@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-    public final Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> getAll() {
@@ -43,18 +43,12 @@ public class UserController {
     @PutMapping
     @Validated(ValidationMarker.OnUpdate.class)
     public User update(@Valid @RequestBody User newUser) {
-        log.trace("check new user id");
-        if (newUser.getId() == null) {
-            log.warn("Id is null");
-            throw new ValidationException("Не указан id");
-        }
-
         log.trace("check if user id in users");
         if (users.containsKey(newUser.getId())) {
             log.debug("making old user ref.");
             User oldUser = users.get(newUser.getId());
             log.debug("check new login is already in users");
-            if (oldUser.getLogin() != newUser.getLogin() && users.values().stream()
+            if (!oldUser.getLogin().equals(newUser.getLogin())  && users.values().stream()
                     .anyMatch(user -> user.getLogin().equals(newUser.getLogin()))) {
                 log.warn("User with login {} is already in users", newUser.getLogin());
                 throw new ValidationException("Пользователь с таким логином уже есть!");

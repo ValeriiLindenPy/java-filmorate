@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -27,34 +26,26 @@ public class FilmController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     @Validated(ValidationMarker.OnCreate.class)
     public Film create(@Valid @RequestBody Film film) {
-        log.trace("check release date");
+
+        log.trace("Check release date");
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
-            log.warn("the date {} is before min - {}", film.getReleaseDate(), MIN_DATE);
+            log.warn("The date {} is before min - {}", film.getReleaseDate(), MIN_DATE);
             throw new ValidationException("дата релиза должна быть не раньше 28 декабря 1895 года");
         }
-        log.trace("check film duration");
-        if (film.getDuration() < 0) {
-            log.warn("Film duration {} is less than 0", film.getDuration());
-            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
-        }
-        log.trace("set film id");
+
+        log.trace("Set film id");
         film.setId(generateId());
-        log.trace("add film to films");
+        log.trace("Add film to films");
         films.put(film.getId(), film);
         return film;
     }
 
+
     @PutMapping
     @Validated(ValidationMarker.OnUpdate.class)
     public Film update(@Valid @RequestBody Film newFilm) {
-        log.trace("check new film if for null");
-        if (newFilm.getId() == null) {
-            log.warn("New film id is null");
-            throw new ValidationException("Не указан id");
-        }
         log.trace("check if new film id is in films");
         if (films.containsKey(newFilm.getId())) {
             log.debug("making instance of old film");
@@ -75,7 +66,4 @@ public class FilmController {
         return ++currentId;
     }
 
-    public Map<Long, Film> getFilmsDB() {
-        return films;
-    }
 }

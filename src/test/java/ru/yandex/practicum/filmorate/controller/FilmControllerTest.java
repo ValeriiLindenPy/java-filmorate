@@ -39,7 +39,7 @@ class FilmControllerTest {
 
         Film filmCreated = controller.create(film);
 
-        assertFalse(controller.getFilmsDB().isEmpty());
+        assertFalse(controller.getAll().isEmpty());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(filmCreated);
 
@@ -55,7 +55,7 @@ class FilmControllerTest {
                 .duration(100).build();
 
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -71,7 +71,7 @@ class FilmControllerTest {
                 .duration(100).build();
 
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -89,7 +89,7 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -104,7 +104,7 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -119,7 +119,7 @@ class FilmControllerTest {
                 .releaseDate(null)
                 .duration(100).build();
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -134,7 +134,7 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(null).build();
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -161,7 +161,7 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(-100).build();
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);
@@ -247,7 +247,7 @@ class FilmControllerTest {
                 .releaseDate(LocalDate.of(1967, 3, 25))
                 .duration(100).build();
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, ValidationMarker.OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertThat(violations).hasSize(1);

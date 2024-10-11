@@ -39,13 +39,17 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		User userCreated = controller.create(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user, ValidationMarker.OnCreate.class);
 
-		assertFalse(controller.users.isEmpty());
-
-		Set<ConstraintViolation<User>> violations = validator.validate(userCreated);
+		violations.stream().forEach(v -> {
+			System.out.println(v.getMessage());
+		});
 
 		assertTrue(violations.isEmpty());
+
+		controller.create(user);
+
+		assertFalse(controller.getAll().isEmpty());
 	}
 
 	@Test
@@ -57,7 +61,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user, ValidationMarker.OnCreate.class);
 
 		assertFalse(violations.isEmpty());
 		assertThat(violations).hasSize(1);
@@ -74,7 +78,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user, ValidationMarker.OnCreate.class);
 
 		assertFalse(violations.isEmpty());
 		assertThat(violations).hasSize(1);
@@ -91,7 +95,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user, ValidationMarker.OnCreate.class);
 
 		assertFalse(violations.isEmpty());
 		assertThat(violations).hasSize(2);
@@ -109,7 +113,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user, ValidationMarker.OnCreate.class);
 
 		assertFalse(violations.isEmpty());
 		assertThat(violations).hasSize(1);
@@ -126,7 +130,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(2050, 5, 15))
 				.build();
 
-		Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user, ValidationMarker.OnCreate.class);
 
 		assertFalse(violations.isEmpty());
 		assertThat(violations).hasSize(1);
