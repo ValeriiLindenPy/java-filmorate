@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.service.exception.UserNotExistException;
-import ru.yandex.practicum.filmorate.service.exception.ValidationException;
 import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.User;
 
