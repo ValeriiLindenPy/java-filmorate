@@ -6,9 +6,10 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import ru.yandex.practicum.filmorate.service.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -22,12 +23,17 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserControllerTest {
 	private Validator validator;
-	private UserController controller;
+	private final UserController controller;
 
-	@BeforeEach
+
+	@Autowired
+    UserControllerTest(UserController controller) {
+        this.controller = controller;
+    }
+
+    @BeforeEach
 	void setUp() {
 		validator = Validation.buildDefaultValidatorFactory().getValidator();
-		controller = new UserController();
 	}
 
 	@Test

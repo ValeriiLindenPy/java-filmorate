@@ -2,61 +2,63 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> getAll() {
-        return users.values();
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriend(@PathVariable long id,
+                                            @PathVariable long otherId) {
+        return userService.getCommonFriend(id, otherId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Validated(ValidationMarker.OnCreate.class) @Valid @RequestBody User user) {
-        log.trace("check user name.");
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.debug("Name is empty - set login as name.");
-            user.setName(user.getLogin());
-        }
-        log.trace("set id.");
-        user.setId(generateId());
-        log.trace("add instance in store");
-        users.put(user.getId(), user);
-        return user;
+        return userService.create(user);
     }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public Map<String, String> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        return userService.addFriend(id, friendId);
+    }
+
 
     @PutMapping
     public User update(@Validated(ValidationMarker.OnUpdate.class) @Valid @RequestBody User newUser) {
-        log.trace("check if user id in users");
-        if (users.containsKey(newUser.getId())) {
-            log.debug("making old user ref.");
-            User oldUser = users.get(newUser.getId());
-            log.trace("add new user in users");
-            users.put(oldUser.getId(), newUser);
-            return newUser;
-        }
-        throw new ValidationException("Пользователь не найден!");
+        return userService.update(newUser);
     }
 
-    private Long generateId() {
-        Long currentId = users.keySet().stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentId;
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public Map<String,String> removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        return userService.removeFriend(id, friendId);
     }
 }

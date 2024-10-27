@@ -7,8 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import ru.yandex.practicum.filmorate.service.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.Film;
 import static org.assertj.core.api.Assertions.assertThat;
 
