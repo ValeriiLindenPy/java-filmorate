@@ -9,7 +9,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.service.exception.FilmNotExistException;
+import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.exception.ValidationException;
 import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -225,7 +225,7 @@ class FilmControllerTest {
                 .duration(film.getDuration())
                 .build();
 
-        assertThrows(FilmNotExistException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             controller.update(updatedFilm);
         }, "Фильм не найден!");
     }
