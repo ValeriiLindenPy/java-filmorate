@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,5 +40,6 @@ public class Film {
             groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
     private Integer duration;
     @Builder.Default
-    private Set<User> likes = new HashSet<>();
+    @JsonIgnore
+    private Set<Long> likes = new HashSet<>();
 }

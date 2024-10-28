@@ -9,7 +9,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.service.exception.UserNotExistException;
+import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -178,7 +178,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		assertThrows(UserNotExistException.class, () -> {
+		assertThrows(NotFoundException.class, () -> {
 			controller.update(updatedUser);
 		}, "Пользователь не найден!");
 	}

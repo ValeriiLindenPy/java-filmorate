@@ -4,7 +4,7 @@ package ru.yandex.practicum.filmorate.service.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.service.exception.UserNotExistException;
+import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.service.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -54,19 +54,13 @@ public class UserService {
             log.trace("add new user in users");
             return userStorage.update(newUser);
         }
-        throw new UserNotExistException("Пользователь не найден!");
+        throw new NotFoundException("Пользователь не найден!");
     }
 
     public Map<String,String> addFriend(Long userId, Long friendId) {
 
         User user = userStorage.getById(userId);
         User friend = userStorage.getById(friendId);
-
-        if (user == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(userId));
-        } else if (friend == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(friendId));
-        }
 
         if (user.getFriends().contains(friendId)) {
             return Map.of("friend", "%s уже у вас в друзьях".formatted(friend.getName()));
@@ -82,12 +76,6 @@ public class UserService {
         User user = userStorage.getById(userId);
         User friend = userStorage.getById(friendId);
 
-        if (user == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(userId));
-        } else if (friend == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(friendId));
-        }
-
         if (!user.getFriends().contains(friendId)) {
             return Map.of("friends", "%s не у вас в друзьях".formatted(friend.getName()));
         }
@@ -102,14 +90,9 @@ public class UserService {
         User user = userStorage.getById(userId);
         User other = userStorage.getById(otherId);
 
-        if (user == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(userId));
-        } else if (other == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(otherId));
-        }
 
         if (!user.getFriends().contains(otherId)) {
-            throw new UserNotExistException("%s не у вас в друзьях".formatted(other.getName()));
+            throw new NotFoundException("%s не у вас в друзьях".formatted(other.getName()));
         }
 
         return user.getFriends().stream()
@@ -120,7 +103,7 @@ public class UserService {
 
     public Collection<User> getFriends(Long userId) {
         if (userStorage.getById(userId) == null) {
-            throw new UserNotExistException("Пользователь с ID - %d не найден.".formatted(userId));
+            throw new NotFoundException("Пользователь с ID - %d не найден.".formatted(userId));
         }
         return userStorage.getById(userId).getFriends().stream()
                 .map(id -> userStorage.getById(id))

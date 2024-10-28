@@ -17,21 +17,16 @@ public class ErrorHandler {
         return new  ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(ValidationException.class)
+    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final RuntimeException e) {
-        return new  ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+    public ErrorResponse handleValidationExceptions(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler({UserNotExistException.class, FilmNotExistException.class})
+
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleMethodArgumentNotValidException(final RuntimeException e) {
+    public ErrorResponse handleNotFoundException(final NotFoundException  e) {
         return new ErrorResponse(e.getMessage());
     }
 

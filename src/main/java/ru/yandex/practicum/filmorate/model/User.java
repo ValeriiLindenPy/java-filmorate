@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,5 +34,6 @@ public class User {
             groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
     private LocalDate birthday;
     @Builder.Default
+    @JsonIgnore
     private Set<Long> friends = new HashSet<>();
 }
