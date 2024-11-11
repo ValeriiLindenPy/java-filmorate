@@ -28,6 +28,8 @@ target/
 *.iws
 *.iml
 *.ipr
+/frontend
+/src/main/java/ru/yandex/practicum/filmorate/config
 
 ### NetBeans ###
 /nbproject/private/

@@ -15,6 +15,8 @@ import java.util.Set;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
     @Null(groups = ValidationMarker.OnCreate.class)
     @NotNull(groups = ValidationMarker.OnUpdate.class, message = "Не указан id")
@@ -39,4 +41,7 @@ public class Film {
     @Positive(message = "Продолжительность не может быть отрицательной.",
             groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
     private Integer duration;
+    @Builder.Default
+    @JsonIgnore
+    private Set<Long> likes = new HashSet<>();
 }

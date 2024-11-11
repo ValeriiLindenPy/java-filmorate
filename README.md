@@ -1,3 +1,4 @@
+
 # Java-filmorate
 Template repository for Filmorate project.
 
@@ -114,6 +115,3 @@ Template repository for Filmorate project.
   WHERE (first_friend_id = 1 AND second_friend_id = 2)
      OR (first_friend_id = 2 AND second_friend_id = 1);
   ```
-    
-
-

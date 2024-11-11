@@ -10,6 +10,8 @@ import java.util.Set;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Null(groups = ValidationMarker.OnCreate.class)
@@ -34,4 +36,7 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем",
             groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
     private LocalDate birthday;
+    @Builder.Default
+    @JsonIgnore
+    private Set<Long> friends = new HashSet<>();
 }
