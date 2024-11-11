@@ -6,9 +6,11 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -20,14 +22,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserControllerTest {
 	private Validator validator;
+	@Autowired
 	private UserController controller;
 
-	@BeforeEach
+
+
+    @BeforeEach
 	void setUp() {
 		validator = Validation.buildDefaultValidatorFactory().getValidator();
-		controller = new UserController();
 	}
 
 	@Test
@@ -173,7 +178,7 @@ class UserControllerTest {
 				.birthday(LocalDate.of(1990, 5, 15))
 				.build();
 
-		assertThrows(ValidationException.class, () -> {
+		assertThrows(NotFoundException.class, () -> {
 			controller.update(updatedUser);
 		}, "Пользователь не найден!");
 	}

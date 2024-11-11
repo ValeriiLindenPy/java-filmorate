@@ -6,9 +6,12 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.service.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.Film;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,14 +23,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmControllerTest {
     private Validator validator;
+    @Autowired
     private FilmController controller;
 
     @BeforeEach
     void setUp() {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
-        controller = new FilmController();
+    }
+
+    @Test
+    void filmGetAll() throws Exception {
+        Film film = Film.builder().name("nisi eiusmod")
+                .description("adipisicing")
+                .releaseDate(LocalDate.of(1967, 3, 25))
+                .duration(100).build();
+
+        Film film2 = Film.builder().name("nisi eiusmod 2")
+                .description("adipisicing")
+                .releaseDate(LocalDate.of(1969, 3, 25))
+                .duration(120).build();
+
+        controller.create(film);
+        controller.create(film2);
+
+        List<Film> films = controller.getAll().stream().toList();
+
+        assertEquals(2, films.size());
     }
 
     @Test
@@ -172,27 +196,6 @@ class FilmControllerTest {
 
 
     @Test
-    void filmGetAll() throws Exception {
-        Film film = Film.builder().name("nisi eiusmod")
-                .description("adipisicing")
-                .releaseDate(LocalDate.of(1967, 3, 25))
-                .duration(100).build();
-
-        Film film2 = Film.builder().name("nisi eiusmod 2")
-                .description("adipisicing")
-                .releaseDate(LocalDate.of(1969, 3, 25))
-                .duration(120).build();
-
-        controller.create(film);
-        controller.create(film2);
-
-        List<Film> films = controller.getAll().stream().toList();
-
-        assertEquals(2, films.size());
-    }
-
-
-    @Test
     void filmUpdateFailId() throws Exception {
         Film updatedFilm = Film.builder().id(null).name("nisi eiusmod")
                 .description("adipisicing")
@@ -222,7 +225,7 @@ class FilmControllerTest {
                 .duration(film.getDuration())
                 .build();
 
-        assertThrows(ValidationException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             controller.update(updatedFilm);
         }, "Фильм не найден!");
     }
