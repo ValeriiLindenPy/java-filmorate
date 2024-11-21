@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,8 +47,4 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.remove(id);
     }
 
-    @Override
-    public void clear() {
-        films.clear();
-    }
 }

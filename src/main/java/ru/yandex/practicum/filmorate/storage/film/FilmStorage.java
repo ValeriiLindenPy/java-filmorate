@@ -31,8 +31,4 @@ public interface FilmStorage {
      */
     void deleteById(Long id);
 
-    /**
-     * delete all films in storage
-     */
-    void clear();
 }

@@ -1,31 +1,27 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.exception.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
 
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
 
     public Collection<Film> getAll() {
         return filmStorage.getAll();
@@ -54,35 +50,37 @@ public class FilmService {
         throw new NotFoundException("Фильм не найден!");
     }
 
-    public Collection<Film> getTop(int count) {
-        return filmStorage.getAll().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
-    }
+    //TODO getByID film
+
+//    public Collection<Film> getTop(int count) {
+//        return filmStorage.getAll().stream()
+//                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+//                .limit(count)
+//                .collect(Collectors.toList());
+//    }
 
 
-    public void addLike(long id, long userId) {
-        Film film = filmStorage.getById(id);
-        User user = userStorage.getById(userId);
+//    public void addLike(long id, long userId) {
+//        Film film = filmStorage.getById(id);
+//        User user = userStorage.getById(userId);
+//
+//        if (film.getLikes().contains(user.getId())) {
+//            throw new DoubleLikeException("Вы уже лайкали этот фильм!");
+//        }
+//
+//        film.getLikes().add(user.getId());
+//    }
 
-        if (film.getLikes().contains(user.getId())) {
-            throw new DoubleLikeException("Вы уже лайкали этот фильм!");
-        }
-
-        film.getLikes().add(user.getId());
-    }
-
-    public void removeLike(long id, long userId) {
-        Film film = filmStorage.getById(id);
-        User user = userStorage.getById(userId);
-
-        if (!film.getLikes().contains(userId)) {
-            throw new LikeNotExistException("Вы не лайкали этот фильм!");
-        }
-
-        film.getLikes().remove(userId);
-    }
+//    public void removeLike(long id, long userId) {
+//        Film film = filmStorage.getById(id);
+//        User user = userStorage.getById(userId);
+//
+//        if (!film.getLikes().contains(userId)) {
+//            throw new LikeNotExistException("Вы не лайкали этот фильм!");
+//        }
+//
+//        film.getLikes().remove(userId);
+//    }
 
     private Long generateId() {
         Long currentId = filmStorage.getAll().stream()

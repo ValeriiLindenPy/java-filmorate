@@ -1,27 +1,28 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.service.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+
 
     public Collection<User> getAll() {
         return userStorage.getAll();
@@ -50,7 +51,7 @@ public class UserService {
 
     public User update(User newUser) {
         log.trace("check if user id in users");
-        if (userStorage.getById(newUser.getId()) != null) {
+        if (userStorage.getById(newUser.getId()).isPresent()) {
             log.trace("add new user in users");
             return userStorage.update(newUser);
         }
@@ -59,55 +60,80 @@ public class UserService {
 
     public Map<String,String> addFriend(Long userId, Long friendId) {
 
-        User user = userStorage.getById(userId);
-        User friend = userStorage.getById(friendId);
+        log.trace("Validating user IDs.");
+        Optional<User> user = userStorage.getById(userId);
+        Optional<User> friend = userStorage.getById(friendId);
 
-        if (user.getFriends().contains(friendId)) {
-            return Map.of("friend", "%s уже у вас в друзьях".formatted(friend.getName()));
+        if (!user.isPresent() || !friend.isPresent()) {
+            log.error("One or both user IDs are invalid.");
+            throw new NotFoundException("One or both users not found!");
         }
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-        return Map.of("friend", "Вы добавили %s в друзья".formatted(friend.getName()));
+        log.trace("Attempting to add friendship.");
+        try {
+            userStorage.addFriendship(userId, friendId);
+            log.info("Friendship successfully added: {} -> {}", userId, friendId);
+        } catch (DataAccessException e) {
+            log.error("Failed to add friendship.", e);
+            throw new ValidationException("Failed to add friendship: " + e.getMessage());
+        }
+        return Map.of("friend", "Вы добавили %s в друзья".formatted(friend.get().getName()));
     }
 
     public Map<String,String> removeFriend(Long userId, Long friendId) {
 
-        User user = userStorage.getById(userId);
-        User friend = userStorage.getById(friendId);
+        log.trace("Validating user IDs.");
+        Optional<User> user = userStorage.getById(userId);
+        Optional<User> friend = userStorage.getById(friendId);
 
-        if (!user.getFriends().contains(friendId)) {
-            return Map.of("friends", "%s не у вас в друзьях".formatted(friend.getName()));
+        if (!user.isPresent() || !friend.isPresent()) {
+            log.error("One or both user IDs are invalid.");
+            throw new NotFoundException("One or both users not found!");
         }
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-        return Map.of("friends", "Вы удалили %s из друзей".formatted(friend.getName()));
+        log.trace("Attempting to remove friendship.");
+        try {
+            userStorage.removeFriend(userId, friendId);
+            log.info("Friendship successfully removed: {} -> {}", userId, friendId);
+            return Map.of("friends", "Вы удалили %s из друзей".formatted(friend.get().getName()));
+        } catch (DataAccessException e) {
+            log.error("Failed to remove friendship.", e);
+            throw new ValidationException("Failed to remove friendship: " + e.getMessage());
+        }
     }
 
     public Collection<User> getCommonFriend(Long userId, Long otherId) {
 
-        User user = userStorage.getById(userId);
-        User other = userStorage.getById(otherId);
-
-
-        if (!user.getFriends().contains(otherId)) {
-            throw new NotFoundException("%s не у вас в друзьях".formatted(other.getName()));
+        if (!usersIdsValidation(userId, otherId)) {
+            log.error("One or both user IDs are invalid.");
+            throw new NotFoundException("One or both users not found!");
         }
 
-        return user.getFriends().stream()
-                .filter(friendId -> other.getFriends().contains(friendId))
-                .map(friendId -> userStorage.getById(friendId))
-                .collect(Collectors.toSet());
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     public Collection<User> getFriends(Long userId) {
-        if (userStorage.getById(userId) == null) {
-            throw new NotFoundException("Пользователь с ID - %d не найден.".formatted(userId));
+        log.trace("Validating user ID.");
+        if (!userStorage.getById(userId).isPresent()) {
+            log.error("User ID {} not found.", userId);
+            throw new NotFoundException("User not found!");
         }
-        return userStorage.getById(userId).getFriends().stream()
-                .map(id -> userStorage.getById(id))
-                .collect(Collectors.toSet());
+
+        log.trace("Fetching friends for user ID: {}", userId);
+        Collection<User> friends = userStorage.getFriends(userId);
+
+        log.info("Found {} friends for user ID: {}", friends.size(), userId);
+        return friends;
+    }
+
+    private boolean usersIdsValidation(Long userId1, Long userId2) {
+        Optional<User> user = userStorage.getById(userId1);
+        Optional<User> friend = userStorage.getById(userId1);
+
+        if (!user.isPresent() || !friend.isPresent()) {
+            return false;
+        }
+        return true;
     }
 
     private Long generateId() {

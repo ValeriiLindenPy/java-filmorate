@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -14,14 +14,16 @@ public class InMemoryUserStorage implements UserStorage {
      * Users Map
      */
     private final Map<Long, User> users = new HashMap<>();
+    private final Map<Long, List<Long>> friendships = new HashMap<>();
+
 
     @Override
-    public User getById(Long id) throws NotFoundException {
+    public Optional<User> getById(Long id) throws NotFoundException {
         User user = users.get(id);
         if (user == null) {
             throw new NotFoundException("Пользователь с ID - %d не найден.".formatted(id));
         }
-        return user;
+        return Optional.of(user);
     }
 
     @Override
@@ -48,7 +50,56 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void clear() {
-        users.clear();
+    public void addFriendship(Long userId, Long friendId) {
+        if (!users.containsKey(userId) || !users.containsKey(friendId)) {
+            throw new NotFoundException("Один из пользователей не найден.");
+        }
+
+
+        if (friendships.containsKey(userId)) {
+            List<Long> friendList = friendships.get(userId);
+            if (friendList.contains(friendId)) {
+                throw new UserAlreadyExistException("The user with id %d is already in your friends!".formatted(friendId));
+            }
+            friendList.add(friendId);
+        }
+
+        List<Long> friendsList = new ArrayList<>();
+        friendsList.add(friendId);
+        friendships.put(userId, friendsList);
+
     }
+
+    @Override
+    public Collection<User> getFriends(Long userId) {
+        return friendships.get(userId).stream().map(
+                friendId -> getById(friendId).get()
+        ).collect(Collectors.toList());
+    }
+
+    @Override
+    public void removeFriend(Long userId, Long friendId) {
+        List<Long> userFriends = friendships.get(userId);
+        if (userFriends != null) {
+            if (!userFriends.contains(friendId)) {
+                throw new NotFoundException("User with id %d is not in your friends".formatted(friendId));
+            }
+            userFriends.remove(friendId);
+        }
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long friendId) {
+        List<Long> userFriends = friendships.getOrDefault(userId, Collections.emptyList());
+        List<Long> friendFriends = friendships.getOrDefault(friendId, Collections.emptyList());
+
+
+        return userFriends.stream()
+                .filter(friendFriends::contains)
+                .map(this::getById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+    }
+
 }
