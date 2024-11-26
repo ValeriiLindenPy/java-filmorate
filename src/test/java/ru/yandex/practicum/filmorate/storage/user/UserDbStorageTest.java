@@ -28,9 +28,9 @@ public class UserDbStorageTest {
 
     @Test
     public void testGetById() {
-        Optional<User> UserOptional = userStorage.getById(1L);
+        Optional<User> userOptional = userStorage.getById(1L);
 
-        assertThat(UserOptional)
+        assertThat(userOptional)
                 .isPresent()
                 .hasValueSatisfying(user -> {
                     assertThat(user.getId()).isEqualTo(1L);
