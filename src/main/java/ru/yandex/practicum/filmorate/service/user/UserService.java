@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.service.user;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,14 +19,24 @@ import java.util.Optional;
 public class UserService {
     private final UserStorage userStorage;
 
-
-
+    /**
+     * Retrieves all users.
+     *
+     * @return Collection<User>
+     */
     public Collection<User> getAll() {
         return userStorage.getAll();
     }
 
+    /**
+     * Creates a new user.
+     *
+     * @param user the user to create
+     * @return User
+     * @throws ValidationException
+     */
     public User create(User user) {
-        log.trace("Checking if user name is empty, set login as name if true.");
+        log.trace("Checking if user name is empty; setting login as name if true.");
         if (user.getName() == null || user.getName().isBlank()) {
             log.debug("Name is empty - setting login as name.");
             user.setName(user.getLogin());
@@ -49,17 +56,32 @@ public class UserService {
         return createdUser;
     }
 
+    /**
+     * Updates an existing user.
+     *
+     * @param newUser the user data to update
+     * @return User
+     * @throws NotFoundException
+     */
     public User update(User newUser) {
-        log.trace("check if user id in users");
+        log.trace("Checking if user ID is present in storage.");
         if (userStorage.getById(newUser.getId()).isPresent()) {
-            log.trace("add new user in users");
+            log.trace("Updating user in storage.");
             return userStorage.update(newUser);
         }
-        throw new NotFoundException("Пользователь не найден!");
+        throw new NotFoundException("User not found!");
     }
 
-    public Map<String,String> addFriend(Long userId, Long friendId) {
-
+    /**
+     * Adds a friend to the user friend list.
+     *
+     * @param userId
+     * @param friendId
+     * @return Map<String, String>
+     * @throws NotFoundException
+     * @throws ValidationException
+     */
+    public Map<String, String> addFriend(Long userId, Long friendId) {
         log.trace("Validating user IDs.");
         Optional<User> user = userStorage.getById(userId);
         Optional<User> friend = userStorage.getById(friendId);
@@ -77,11 +99,19 @@ public class UserService {
             log.error("Failed to add friendship.", e);
             throw new ValidationException("Failed to add friendship: " + e.getMessage());
         }
-        return Map.of("friend", "Вы добавили %s в друзья".formatted(friend.get().getName()));
+        return Map.of("friend", "You added %s as a friend".formatted(friend.get().getName()));
     }
 
-    public Map<String,String> removeFriend(Long userId, Long friendId) {
-
+    /**
+     * Removes a friend from the user's friend list.
+     *
+     * @param userId
+     * @param friendId
+     * @return Map<String, String>
+     * @throws NotFoundException
+     * @throws ValidationException
+     */
+    public Map<String, String> removeFriend(Long userId, Long friendId) {
         log.trace("Validating user IDs.");
         Optional<User> user = userStorage.getById(userId);
         Optional<User> friend = userStorage.getById(friendId);
@@ -95,15 +125,22 @@ public class UserService {
         try {
             userStorage.removeFriend(userId, friendId);
             log.info("Friendship successfully removed: {} -> {}", userId, friendId);
-            return Map.of("friends", "Вы удалили %s из друзей".formatted(friend.get().getName()));
+            return Map.of("friends", "You removed %s from friends".formatted(friend.get().getName()));
         } catch (DataAccessException e) {
             log.error("Failed to remove friendship.", e);
             throw new ValidationException("Failed to remove friendship: " + e.getMessage());
         }
     }
 
+    /**
+     * Retrieves a list of common friends between two users.
+     *
+     * @param userId
+     * @param otherId
+     * @return Collection<User>
+     * @throws NotFoundException
+     */
     public Collection<User> getCommonFriend(Long userId, Long otherId) {
-
         if (!usersIdsValidation(userId, otherId)) {
             log.error("One or both user IDs are invalid.");
             throw new NotFoundException("One or both users not found!");
@@ -112,6 +149,13 @@ public class UserService {
         return userStorage.getCommonFriends(userId, otherId);
     }
 
+    /**
+     * Retrieves the friend list of a user.
+     *
+     * @param userId
+     * @return Collection<User>
+     * @throws NotFoundException
+     */
     public Collection<User> getFriends(Long userId) {
         log.trace("Validating user ID.");
         if (!userStorage.getById(userId).isPresent()) {
@@ -126,19 +170,28 @@ public class UserService {
         return friends;
     }
 
+    /**
+     * Validates both user IDs exist.
+     *
+     * @param userId1
+     * @param userId2
+     * @return boolean
+     */
     private boolean usersIdsValidation(Long userId1, Long userId2) {
-        Optional<User> user = userStorage.getById(userId1);
-        Optional<User> friend = userStorage.getById(userId1);
+        Optional<User> user1 = userStorage.getById(userId1);
+        Optional<User> user2 = userStorage.getById(userId2);
 
-        if (!user.isPresent() || !friend.isPresent()) {
-            return false;
-        }
-        return true;
+        return user1.isPresent() && user2.isPresent();
     }
 
+    /**
+     * Generates new unique ID for a user.
+     *
+     * @return Long
+     */
     private Long generateId() {
         Long currentId = userStorage.getAll().stream()
-                .mapToLong(user -> user.getId())
+                .mapToLong(User::getId)
                 .max()
                 .orElse(0);
         return ++currentId;

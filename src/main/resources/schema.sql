@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS films (
     name VARCHAR(50) NOT NULL,
     description VARCHAR(200) NOT NULL,
     duration INTEGER NOT NULL,
-    release_date DATE NOT NULL
+    release_date DATE NOT NULL,
+    mpa_id BIGINT,
+    CONSTRAINT fk_mpa_film FOREIGN KEY (mpa_id) REFERENCES mpa_ratings (id) ON DELETE CASCADE
 );
 
 -- Films genres Table
@@ -45,8 +47,10 @@ CREATE TABLE IF NOT EXISTS film_genres (
     film_id BIGINT NOT NULL,
     genre_id BIGINT NOT NULL,
     CONSTRAINT fk_film FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
-    CONSTRAINT fk_genre FOREIGN KEY (genre_id) REFERENCES genres (id) ON DELETE CASCADE
+    CONSTRAINT fk_genre FOREIGN KEY (genre_id) REFERENCES genres (id) ON DELETE CASCADE,
+    CONSTRAINT unique_film_genre UNIQUE (film_id, genre_id)
 );
+
 
 -- Films genres Table
 CREATE TABLE IF NOT EXISTS film_mpa (
@@ -61,5 +65,6 @@ CREATE TABLE IF NOT EXISTS film_likes (
     film_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     CONSTRAINT fk_film_likes FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
-    CONSTRAINT fk_user_likes FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_user_likes FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT unique_film_user UNIQUE (film_id, user_id)
 );

@@ -5,16 +5,12 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mapper.UserRowMapper;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static ru.yandex.practicum.filmorate.storage.UserSqlQueries.*;
-
 
 @Repository
 @Primary
@@ -24,9 +20,10 @@ public class UserDbStorage implements UserStorage {
     private final UserRowMapper mapper;
 
     @Override
-    public Optional<User> getById(Long id) {
+    public Optional<User> getById(long id) {
         try {
-            User user = jdbc.queryForObject(FIND_USER_BY_ID_QUERY, mapper, id);
+            String findUserByIdQuery = "SELECT * FROM users WHERE id = ?";
+            User user = jdbc.queryForObject(findUserByIdQuery, mapper, id);
             return Optional.of(user);
         } catch (DataAccessException ignored) {
             return Optional.empty();
@@ -35,12 +32,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        return jdbc.query(FIND_ALL_USERS_QUERY, mapper);
+        String findAllUsersQuery = "SELECT * FROM users";
+        return jdbc.query(findAllUsersQuery, mapper);
     }
 
     @Override
     public User create(User user) {
-        jdbc.update(INSERT_USER_QUERY,
+        String insertUserQuery = "INSERT INTO users(id, email, login, name, password, birthday)" +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+        jdbc.update(insertUserQuery,
                 user.getId(),
                 user.getEmail(),
                 user.getLogin(),
@@ -53,7 +53,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User newUser) {
-        int rowsUpdated = jdbc.update(UPDATE_USER_QUERY,
+        String updateUserQuery = "UPDATE users SET email = ?, login = ?, name = ?, password = ?, birthday = ? WHERE id = ?";
+        jdbc.update(updateUserQuery,
                 newUser.getEmail(),
                 newUser.getLogin(),
                 newUser.getName(),
@@ -61,19 +62,13 @@ public class UserDbStorage implements UserStorage {
                 newUser.getBirthday(),
                 newUser.getId()
         );
-
-
-        if (rowsUpdated == 0) {
-            throw new DataAccessException("User with ID " + newUser.getId() + " not found.") {
-            };
-        }
-
         return newUser;
     }
 
     @Override
     public void deleteById(Long id) {
-        int rowsDeleted = jdbc.update(DELETE_USER_QUERY, id);
+        String deleteUserQuery = "DELETE FROM users WHERE id = ?";
+        int rowsDeleted = jdbc.update(deleteUserQuery, id);
 
         if (rowsDeleted == 0) {
             throw new DataAccessException("User with ID " + id + " not found.") {
@@ -82,29 +77,38 @@ public class UserDbStorage implements UserStorage {
     }
 
     public void addFriendship(Long userId, Long friendId) {
-
-        int count = jdbc.queryForObject(CHECK_FRIENDSHIP_QUERY, Integer.class, userId, friendId);
+        String checkFriendshipQuery = "SELECT COUNT(*) FROM user_friendships WHERE user1_id = ? AND user2_id = ?";
+        int count = jdbc.queryForObject(checkFriendshipQuery, Integer.class, userId, friendId);
 
         if (count == 0) {
-            jdbc.update(INSERT_FRIENDSHIP_QUERY, userId, friendId);
+            String insertFriendshipQuery = "INSERT INTO user_friendships (user1_id, user2_id) VALUES (?, ?)";
+            jdbc.update(insertFriendshipQuery, userId, friendId);
         }
     }
 
     public List<User> getCommonFriends(Long userId, Long friendId) {
-        return jdbc.query(GET_COMMON_FRIENDSHIP_QUERY, mapper, userId, friendId);
+        String getCommonFriendshipQuery = "SELECT * FROM USERS u \n" +
+                "WHERE u.ID IN(\n" +
+                "SELECT uf1.user2_id AS common_friend_id\n" +
+                "FROM user_friendships uf1\n" +
+                "JOIN user_friendships uf2 ON uf1.USER2_ID = uf2.USER2_ID\n" +
+                "WHERE uf1.USER1_ID = ? AND uf2.USER1_ID = ?)";
+        return jdbc.query(getCommonFriendshipQuery, mapper, userId, friendId);
     }
 
     @Override
     public Collection<User> getFriends(Long userId) {
-        return jdbc.query(GET_FRIENDS_QUERY, mapper, userId);
+        String getFriendsQuery =
+                "SELECT u.* FROM users u " +
+                        "JOIN user_friendships uf ON u.id = uf.user2_id " +
+                        "WHERE uf.user1_id = ?";
+        return jdbc.query(getFriendsQuery, mapper, userId);
     }
 
     @Override
     public void removeFriend(Long userId, Long friendId) {
-        int rowsDeleted = jdbc.update(DELETE_FRIENDSHIP_QUERY, userId, friendId);
-
-        if (rowsDeleted == 0) {
-            throw new NotFoundException("Friendship not found or already removed!");
-        }
+        String deleteFriendshipQuery =
+                "DELETE FROM user_friendships WHERE user1_id = ? AND user2_id = ?";
+        jdbc.update(deleteFriendshipQuery, userId, friendId);
     }
 }

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Film.
@@ -29,8 +31,14 @@ public class Film {
     @NotBlank(groups = ValidationMarker.OnCreate.class, message = "Описание не может быть null.")
     private String description;
 
+    private MPA mpa;
+
+    private Set<Genre> genres = new HashSet<>();
+
     @NotNull(groups = ValidationMarker.OnCreate.class, message = "Дата выпуска не может быть null.")
     private LocalDate releaseDate;
+
+    private Set<Long> likes = new HashSet<>();
 
     @NotNull(groups = ValidationMarker.OnCreate.class, message = "Продолжительность не может быть null.")
     @Positive(message = "Продолжительность не может быть отрицательной.",

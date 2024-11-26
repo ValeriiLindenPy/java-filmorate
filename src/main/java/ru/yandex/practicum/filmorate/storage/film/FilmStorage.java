@@ -3,13 +3,15 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 public interface FilmStorage {
 
     /**
      * get a film by id in storage
      */
-    Film getById(Long id);
+    Optional<Film> getById(Long id);
 
     /**
      * get all films in storage
@@ -31,4 +33,11 @@ public interface FilmStorage {
      */
     void deleteById(Long id);
 
+    Set<Long> getLikes(java.lang.Long filmId);
+
+    Collection<Film> getTop(int count);
+
+    void addLike(Long userId, Long filmId);
+
+    void removeLike(Long userId, Long filmId);
 }

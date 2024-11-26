@@ -17,28 +17,8 @@ INSERT INTO users (id, email, login, name, password, birthday) VALUES
 
 -- add friendships
 INSERT INTO user_friendships (user1_id, user2_id) VALUES
-(1, 2),
 (1, 3),
 (2, 3);
-
--- add films
-INSERT INTO films (id, name, description, duration, release_date)
-VALUES
-(1, 'The Matrix', 'A computer hacker learns the truth about his reality.', 136, '1999-03-31'),
-(2, 'Inception', 'A thief steals secrets through the use of dream-sharing technology.', 148, '2010-07-16'),
-(3, 'The Dark Knight', 'Batman faces the Joker, a criminal mastermind.', 152, '2008-07-18'),
-(4, 'Toy Story', 'Toys come to life and go on adventures.', 81, '1995-11-22'),
-(5, 'Get Out', 'A man uncovers a disturbing secret while visiting his girlfriend’s family.', 104, '2017-02-24');
-
--- add genres
-INSERT INTO genres (id, name)
-VALUES
-(1, 'COMEDY'),
-(2, 'DRAMA'),
-(3, 'CARTOON'),
-(4, 'THRILLER'),
-(5, 'DOCUMENTARY'),
-(6, 'ACTION_MOVIE');
 
 -- add genres mpa
 INSERT INTO mpa_ratings (id, name) VALUES
@@ -48,6 +28,24 @@ INSERT INTO mpa_ratings (id, name) VALUES
 (4, 'R'),
 (5, 'NC-17');
 
+-- add films
+INSERT INTO films (id, name, description, duration, release_date, mpa_id)
+VALUES
+(1, 'The Matrix', 'A computer hacker learns the truth about his reality.', 136, '1999-03-31', 1),
+(2, 'Inception', 'A thief steals secrets through the use of dream-sharing technology.', 148, '2010-07-16', 1),
+(3, 'The Dark Knight', 'Batman faces the Joker, a criminal mastermind.', 152, '2008-07-18', 1),
+(4, 'Toy Story', 'Toys come to life and go on adventures.', 81, '1995-11-22', 1),
+(5, 'Get Out', 'A man uncovers a disturbing secret while visiting his girlfriend’s family.', 104, '2017-02-24', 1);
+
+-- add genres
+INSERT INTO genres (id, name)
+VALUES
+(1, 'Комедия'),
+(2, 'Драма'),
+(3, 'Мультфильм'),
+(4, 'Триллер'),
+(5, 'Документальный'),
+(6, 'Боевик');
 
 -- add film genres
 INSERT INTO film_genres (film_id, genre_id)

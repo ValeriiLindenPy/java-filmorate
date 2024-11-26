@@ -12,7 +12,7 @@ public interface UserStorage {
     /**
      * get a user by id in storage
      */
-    Optional<User> getById(Long id);
+    Optional<User> getById(long id);
 
     /**
      * get all users in storage
