@@ -7,8 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
+
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
@@ -16,18 +17,19 @@ import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class})
+@Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class,
+LikeStorage.class})
 @Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
 public class FilmDbStorageTest {
-
+    private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
-    private final JdbcTemplate jdbcTemplate;
+    private final LikeStorage likeStorage;
 
     @Test
     public void testGetById() {
@@ -63,8 +65,9 @@ public class FilmDbStorageTest {
         film.setReleaseDate(LocalDate.of(2023, 1, 1));
         film.setMpa(new MPA(1L, "G"));
 
-        filmStorage.create(film);
 
+        filmStorage.create(film);
+        mpaStorage.saveMPA(film);
         Optional<Film> createdFilm = filmStorage.getById(6L);
 
         assertThat(createdFilm)
@@ -122,35 +125,12 @@ public class FilmDbStorageTest {
         assertThat(optionalFilm).isNotPresent();
     }
 
-    @Test
-    public void testGetLikes() {
-        Set<Long> likes = filmStorage.getLikes(1L);
 
-        assertThat(likes).containsExactly(1L);
-    }
-
-    @Test
-    public void testAddLike() {
-        filmStorage.addLike(2L, 1L);
-
-        Set<Long> likes = filmStorage.getLikes(1L);
-
-        assertThat(likes).containsExactlyInAnyOrder(1L, 2L);
-    }
-
-    @Test
-    public void testRemoveLike() {
-        filmStorage.removeLike(1L, 1L);
-
-        Set<Long> likes = filmStorage.getLikes(1L);
-
-        assertThat(likes).isEmpty();
-    }
 
     @Test
     public void testGetTop() {
-        filmStorage.addLike(1L, 2L);
-        filmStorage.addLike(2L, 2L);
+        likeStorage.addLike(1L, 2L);
+        likeStorage.addLike(2L, 2L);
 
         Collection<Film> topFilms = filmStorage.getTop(2);
 

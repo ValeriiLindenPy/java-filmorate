@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.like.LikeService;
 
 import java.util.Collection;
 
@@ -18,6 +19,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
+    private final LikeService likeService;
 
     @GetMapping
     public Collection<Film> getAll() {
@@ -42,12 +44,12 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable long id, @PathVariable long userId) {
-        filmService.addLike(id, userId);
+        likeService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(@PathVariable long id, @PathVariable long userId) {
-        filmService.removeLike(id, userId);
+        likeService.removeLike(id, userId);
     }
 
 
