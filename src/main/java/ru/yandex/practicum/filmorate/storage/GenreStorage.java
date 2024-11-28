@@ -70,21 +70,28 @@ public class GenreStorage {
         return new HashSet<>(jdbc.query(findGenresByFilmId, mapper, filmId));
     }
 
-    public Map<Long, Genre> getAllFilmsGenres() {
-        String sql = "SELECT f.ID AS film_id, g.ID AS genre_id , g.NAME AS genre_name\n" +
-                "FROM FILMS f \n" +
-                "LEFT JOIN FILM_GENRES fg ON fg.FILM_ID = f.ID \n" +
+    public Map<Long, Set<Genre>> getAllFilmsGenres() {
+        String sql = "SELECT f.ID AS film_id, g.ID AS genre_id, g.NAME AS genre_name " +
+                "FROM FILMS f " +
+                "LEFT JOIN FILM_GENRES fg ON fg.FILM_ID = f.ID " +
                 "LEFT JOIN GENRES g ON g.ID = fg.GENRE_ID";
-        HashMap<Long, Genre> filmGenres = new HashMap<>();
+        Map<Long, Set<Genre>> filmGenres = new HashMap<>();
+
         jdbc.query(sql, rs -> {
             while (rs.next()) {
-                filmGenres.put(rs.getLong("film_id"), Genre.builder()
-                        .id(rs.getLong("genre_id")).name("genre_name").build());
-            }
+                Long filmId = rs.getLong("film_id");
+                Genre genre = Genre.builder()
+                        .id(rs.getLong("genre_id"))
+                        .name(rs.getString("genre_name"))
+                        .build();
 
+                filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+            }
         });
+
         return filmGenres;
     }
+
 
 
 

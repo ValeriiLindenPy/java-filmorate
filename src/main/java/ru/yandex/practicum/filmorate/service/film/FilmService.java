@@ -31,18 +31,10 @@ public class FilmService {
      * @return {@link Collection<Film>}
      */
     public Collection<Film> getAll() {
-        Map<Long, Genre> genres = genreStorage.getAllFilmsGenres();
-
+        Map<Long, Set<Genre>> genres = genreStorage.getAllFilmsGenres();
         List<Film> films = filmStorage.getAll().stream().toList();
+        setGenresForFilms(films);
 
-        for (Film film : films) {
-            film.setGenres(new HashSet<>());
-            genres.forEach((id, genre) -> {
-                    if (id == film.getId()) {
-                        film.getGenres().add(genre);
-                    }
-            });
-        }
         return films;
     }
 
@@ -130,19 +122,25 @@ public class FilmService {
      * @return {@link Collection<Film>}
      */
     public Collection<Film> getTop(int count) {
-        Map<Long, Genre> genres = genreStorage.getAllFilmsGenres();
+        Map<Long, Set<Genre>> genres = genreStorage.getAllFilmsGenres();
         List<Film> films = filmStorage.getTop(count).stream().toList();
 
-        for (Film film : films) {
-            film.setGenres(new HashSet<>());
-            genres.forEach((id, genre) -> {
-                if (id == film.getId()) {
-                    film.getGenres().add(genre);
-                }
-            });
-        }
+        setGenresForFilms(films);
         return films;
     }
+
+    /**
+     * Set genres for a film.
+     * @param films
+     */
+    private void setGenresForFilms(List<Film> films) {
+        Map<Long, Set<Genre>> filmGenres = genreStorage.getAllFilmsGenres();
+        for (Film film : films) {
+            Set<Genre> genres = filmGenres.getOrDefault(film.getId(), new HashSet<>());
+            film.setGenres(genres);
+        }
+    }
+
 
     /**
      * Generates a new unique ID for a film.
