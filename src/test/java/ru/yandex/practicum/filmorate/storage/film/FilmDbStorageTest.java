@@ -43,8 +43,8 @@ public class FilmDbStorageTest {
                     assertThat(film.getDescription()).isEqualTo("A computer hacker learns the truth about his reality.");
                     assertThat(film.getDuration()).isEqualTo(136);
                     assertThat(film.getReleaseDate()).isEqualTo(LocalDate.parse("1999-03-31"));
-                    assertThat(film.getMpa().getId()).isEqualTo(4L);
-                    assertThat(film.getMpa().getName()).isEqualTo("R");
+                    assertThat(film.getMpa().getId()).isEqualTo(1L);
+                    assertThat(film.getMpa().getName()).isEqualTo("G");
                 });
     }
 

@@ -29,13 +29,13 @@ INSERT INTO mpa_ratings (id, name) VALUES
 (5, 'NC-17');
 
 -- add films
-INSERT INTO films (id, name, description, duration, release_date)
+INSERT INTO films (id, name, description, duration, release_date, mpa_id)
 VALUES
-(1, 'The Matrix', 'A computer hacker learns the truth about his reality.', 136, '1999-03-31'),
-(2, 'Inception', 'A thief steals secrets through the use of dream-sharing technology.', 148, '2010-07-16'),
-(3, 'The Dark Knight', 'Batman faces the Joker, a criminal mastermind.', 152, '2008-07-18'),
-(4, 'Toy Story', 'Toys come to life and go on adventures.', 81, '1995-11-22'),
-(5, 'Get Out', 'A man uncovers a disturbing secret while visiting his girlfriend’s family.', 104, '2017-02-24');
+(1, 'The Matrix', 'A computer hacker learns the truth about his reality.', 136, '1999-03-31', 1),
+(2, 'Inception', 'A thief steals secrets through the use of dream-sharing technology.', 148, '2010-07-16', 2),
+(3, 'The Dark Knight', 'Batman faces the Joker, a criminal mastermind.', 152, '2008-07-18', 3),
+(4, 'Toy Story', 'Toys come to life and go on adventures.', 81, '1995-11-22', 4),
+(5, 'Get Out', 'A man uncovers a disturbing secret while visiting his girlfriend’s family.', 104, '2017-02-24', 5);
 
 -- add genres
 INSERT INTO genres (id, name)
@@ -58,11 +58,11 @@ VALUES
 
 INSERT INTO film_mpa (film_id, mpa_id)
 VALUES
-(1, 4),
-(2, 3),
-(3, 2),
-(4, 5),
-(5, 4);
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5);
 
 INSERT INTO film_likes (film_id, user_id)
 VALUES

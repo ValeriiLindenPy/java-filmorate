@@ -37,9 +37,9 @@ CREATE TABLE IF NOT EXISTS films (
     name VARCHAR(50) NOT NULL,
     description VARCHAR(200) NOT NULL,
     duration INTEGER NOT NULL,
-    release_date DATE NOT NULL
---    mpa_id BIGINT,
---    CONSTRAINT fk_mpa_film FOREIGN KEY (mpa_id) REFERENCES mpa_ratings (id) ON DELETE CASCADE
+    release_date DATE NOT NULL,
+    mpa_id BIGINT,
+    CONSTRAINT fk_mpa_film FOREIGN KEY (mpa_id) REFERENCES mpa_ratings (id) ON DELETE CASCADE
 );
 
 -- Films genres Table

@@ -7,9 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.mapper.GenreRowMapper;
-
-
 import java.util.*;
+
 
 @Repository
 @RequiredArgsConstructor
@@ -59,6 +58,34 @@ public class GenreStorage {
         jdbc.update(deleteSql, film.getId());
         saveGenres(film);
     }
+
+    public Set<Genre> getFilmGenres(Long filmId) {
+        String findGenresByFilmId = "SELECT g.* \n" +
+                "FROM GENRES g \n" +
+                "WHERE g.ID IN (\n" +
+                "SELECT fg.genre_id\n" +
+                "FROM FILM_GENRES fg \n" +
+                "WHERE fg.film_id = ?\n" +
+                ")";
+        return new HashSet<>(jdbc.query(findGenresByFilmId, mapper, filmId));
+    }
+
+    public Map<Long, Genre> getAllFilmsGenres() {
+        String sql = "SELECT f.ID AS film_id, g.ID AS genre_id , g.NAME AS genre_name\n" +
+                "FROM FILMS f \n" +
+                "LEFT JOIN FILM_GENRES fg ON fg.FILM_ID = f.ID \n" +
+                "LEFT JOIN GENRES g ON g.ID = fg.GENRE_ID";
+        HashMap<Long, Genre> filmGenres = new HashMap<>();
+        jdbc.query(sql, rs -> {
+            while (rs.next()) {
+                filmGenres.put(rs.getLong("film_id"), Genre.builder()
+                        .id(rs.getLong("genre_id")).name("genre_name").build());
+            }
+
+        });
+        return filmGenres;
+    }
+
 
 
 }

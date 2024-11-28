@@ -13,8 +13,7 @@ import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +31,19 @@ public class FilmService {
      * @return {@link Collection<Film>}
      */
     public Collection<Film> getAll() {
-        return filmStorage.getAll();
+        Map<Long, Genre> genres = genreStorage.getAllFilmsGenres();
+
+        List<Film> films = filmStorage.getAll().stream().toList();
+
+        for (Film film : films) {
+            film.setGenres(new HashSet<>());
+            genres.forEach((id, genre) -> {
+                    if (id == film.getId()) {
+                        film.getGenres().add(genre);
+                    }
+            });
+        }
+        return films;
     }
 
     /**
@@ -43,8 +54,10 @@ public class FilmService {
      * @throws NotFoundException
      */
     public Film getById(long id) {
-        return filmStorage.getById(id).orElseThrow(() ->
+        Film film = filmStorage.getById(id).orElseThrow(() ->
                 new NotFoundException("Film with id %d not found".formatted(id)));
+        film.setGenres(genreStorage.getFilmGenres(id));
+        return film;
     }
 
     /**
@@ -117,7 +130,18 @@ public class FilmService {
      * @return {@link Collection<Film>}
      */
     public Collection<Film> getTop(int count) {
-        return filmStorage.getTop(count);
+        Map<Long, Genre> genres = genreStorage.getAllFilmsGenres();
+        List<Film> films = filmStorage.getTop(count).stream().toList();
+
+        for (Film film : films) {
+            film.setGenres(new HashSet<>());
+            genres.forEach((id, genre) -> {
+                if (id == film.getId()) {
+                    film.getGenres().add(genre);
+                }
+            });
+        }
+        return films;
     }
 
     /**

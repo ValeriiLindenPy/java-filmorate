@@ -6,7 +6,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 
 import java.util.*;
@@ -21,20 +20,17 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getById(Long id) {
         try {
-            String findFilmByIdQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
-                    "FROM FILMS f\n" +
-                    "LEFT JOIN FILM_MPA fm ON f.ID = fm.FILM_ID  \n" +
-                    "LEFT JOIN MPA_RATINGS mr ON fm.MPA_ID = mr.ID\n" +
+            String findFilmByIdQuery = "SELECT f.*, mr.name AS mpa_name " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID " +
                     "WHERE f.ID = ?";
             Film film = jdbc.queryForObject(findFilmByIdQuery, mapper, id);
-            if (film != null) {
-                setFilmGenres(film);
-            }
             return Optional.of(film);
         } catch (DataAccessException ignored) {
             return Optional.empty();
         }
     }
+
 
     @Override
     public Collection<Film> getAll() {
@@ -47,25 +43,27 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-        String insertFilmQuery = "INSERT INTO films (id, name, description, duration, release_date) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String insertFilmQuery = "INSERT INTO films (id, name, description, duration, release_date, mpa_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
         jdbc.update(insertFilmQuery,
                 film.getId(),
                 film.getName(),
                 film.getDescription(),
                 film.getDuration(),
-                film.getReleaseDate());
+                film.getReleaseDate(),
+                film.getMpa().getId());
         return film;
     }
 
     @Override
     public Film update(Film newFilm) {
-        String updateFilmQuery = "UPDATE films SET name = ?, description = ?, duration = ?, release_date = ? WHERE id = ?";
+        String updateFilmQuery = "UPDATE films SET name = ?, description = ?, duration = ?, release_date = ?, mpa_id = ? WHERE id = ?";
         jdbc.update(updateFilmQuery,
                 newFilm.getName(),
                 newFilm.getDescription(),
                 newFilm.getDuration(),
                 newFilm.getReleaseDate(),
+                newFilm.getMpa().getId(),
                 newFilm.getId()
         );
         return newFilm;
@@ -93,16 +91,4 @@ public class FilmDbStorage implements FilmStorage {
         return jdbc.query(getLikesPopularQuery, mapper, count);
     }
 
-
-    private void setFilmGenres(Film film) {
-        String getFilmGenresQuery = "SELECT g.id, g.name FROM genres g " +
-                "JOIN film_genres fg ON g.id = fg.genre_id WHERE fg.film_id = ?";
-        List<Genre> genres = jdbc.query(getFilmGenresQuery, (rs, rowNum) -> {
-            Genre genre = new Genre();
-            genre.setId(rs.getLong("id"));
-            genre.setName(rs.getString("name"));
-            return genre;
-        }, film.getId());
-        film.setGenres(new HashSet<>(genres));
-    }
 }
