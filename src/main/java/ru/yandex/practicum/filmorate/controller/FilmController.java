@@ -52,9 +52,14 @@ public class FilmController {
         likeService.removeLike(id, userId);
     }
 
-
     @PutMapping
     public Film update(@Validated(ValidationMarker.OnUpdate.class) @Valid @RequestBody Film newFilm) {
         return filmService.update(newFilm);
     }
+
+    @DeleteMapping("/{filmId}")
+    public void removeFilm(@PathVariable long filmId) {
+        filmService.deleteById(filmId);
+    }
+
 }
