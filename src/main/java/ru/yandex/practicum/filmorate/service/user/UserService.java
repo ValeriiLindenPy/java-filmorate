@@ -213,4 +213,16 @@ public class UserService {
         userStorage.deleteById(userId);
         log.info("Successfully deleted user with ID {}", userId);
     }
+
+    /**
+     * Retrieves a user by ID.
+     *
+     * @param userId ID of the user to retrieve
+     * @return the user object if found
+     * @throws NotFoundException if the user does not exist
+     */
+    public Optional<User> getUserById(long userId) {
+        log.debug("Attempting to retrieve user with ID {}", userId);
+        return userStorage.getById(userId);
+    }
 }

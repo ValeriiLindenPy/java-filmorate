@@ -169,6 +169,7 @@ public class FilmService {
         }
         log.trace("Deleting film ID {}", filmId);
         filmStorage.deleteById(filmId);
+        filmStorage.getTop(10);
         log.info("Successfully deleted film with ID {}", filmId);
     }
 

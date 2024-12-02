@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -61,5 +62,10 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public void removeUser(@PathVariable long userId) {
         userService.deleteById(userId);
+    }
+
+    @GetMapping("/{id}")
+    public Optional<User> getUser(@PathVariable long id) {
+        return userService.getUserById(id);
     }
 }
