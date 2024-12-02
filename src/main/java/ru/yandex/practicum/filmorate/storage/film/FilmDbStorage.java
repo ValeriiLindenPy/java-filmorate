@@ -75,8 +75,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update(deleteFilmQuery, id);
     }
 
-
-
     @Override
     public Collection<Film> getTop(int count) {
         String getLikesPopularQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
