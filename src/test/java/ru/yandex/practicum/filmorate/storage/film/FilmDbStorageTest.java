@@ -4,6 +4,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.context.annotation.Import;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class,
 LikeStorage.class})
-@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
+@AutoConfigureTestDatabase
 public class FilmDbStorageTest {
     private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
