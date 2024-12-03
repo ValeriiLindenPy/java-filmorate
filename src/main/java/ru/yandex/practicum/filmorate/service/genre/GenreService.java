@@ -17,7 +17,7 @@ public class GenreService {
     private final GenreStorage genreStorage;
 
     /**
-     * Retrieves all films
+     * Retrieves all genres
      *
      * @return {@link Collection<Genre>}
      */

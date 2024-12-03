@@ -25,7 +25,7 @@ public class MPAController {
     }
 
     @GetMapping("/{id}")
-    public MPA getFriends(@PathVariable long id) {
+    public MPA getByID(@PathVariable long id) {
         return mpaService.getById(id);
     }
 }

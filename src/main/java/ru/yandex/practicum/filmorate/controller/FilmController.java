@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import ru.yandex.practicum.filmorate.service.director.DirectorService;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.service.like.LikeService;
 
@@ -20,6 +21,8 @@ import java.util.Collection;
 public class FilmController {
     private final FilmService filmService;
     private final LikeService likeService;
+    //todo
+//    private final DirectorService directorService;
 
     @GetMapping
     public Collection<Film> getAll() {
@@ -30,6 +33,7 @@ public class FilmController {
     public Film getByID(@PathVariable long id) {
         return filmService.getById(id);
     }
+
 
     @GetMapping("/popular")
     public Collection<Film> getTop(@RequestParam(defaultValue = "10") int count) {

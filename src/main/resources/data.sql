@@ -4,6 +4,7 @@ DELETE FROM film_mpa;
 DELETE FROM film_genres;
 DELETE FROM films;
 DELETE FROM genres;
+DELETE FROM directors;
 DELETE FROM mpa_ratings;
 DELETE FROM user_friendships;
 DELETE FROM users;
@@ -37,6 +38,12 @@ VALUES
 (4, 'Toy Story', 'Toys come to life and go on adventures.', 81, '1995-11-22', 4),
 (5, 'Get Out', 'A man uncovers a disturbing secret while visiting his girlfriend’s family.', 104, '2017-02-24', 5);
 
+-- add directors
+INSERT INTO directors (id, name)
+VALUES
+(1, 'Spielberg'),
+(2, 'Cameron');
+
 -- add genres
 INSERT INTO genres (id, name)
 VALUES
@@ -55,6 +62,13 @@ VALUES
 (3, 6),
 (4, 3),
 (5, 4);
+
+
+-- add film directors
+INSERT INTO film_directors (film_id, director_id)
+VALUES
+(1, 2),
+(2, 1);
 
 INSERT INTO film_mpa (film_id, mpa_id)
 VALUES
