@@ -68,3 +68,16 @@ INSERT INTO film_likes (film_id, user_id)
 VALUES
 (1, 1),
 (2, 3);
+
+-- Пример отзыва
+INSERT INTO reviews (content, is_positive, user_id, film_id)
+VALUES
+('Amazing film!', true, 1, 1),
+('Not worth watching.', false, 2, 1);
+
+-- Пример лайков/дизлайков
+INSERT INTO review_ratings (review_id, user_id, is_like)
+VALUES
+(1, 1, true),  -- Лайк от пользователя 1
+(1, 2, true),  -- Лайк от пользователя 2
+(2, 3, false); -- Дизлайк от пользователя 3
