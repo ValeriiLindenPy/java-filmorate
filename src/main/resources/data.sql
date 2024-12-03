@@ -81,4 +81,5 @@ VALUES
 INSERT INTO film_likes (film_id, user_id)
 VALUES
 (1, 1),
+(2, 2),
 (2, 3);

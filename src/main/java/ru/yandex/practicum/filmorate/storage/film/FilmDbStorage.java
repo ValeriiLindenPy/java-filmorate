@@ -91,4 +91,23 @@ public class FilmDbStorage implements FilmStorage {
         return jdbc.query(getLikesPopularQuery, mapper, count);
     }
 
+    public Collection<Film> getDirectorFilmSortedByLike(Long directorId) {
+        String getDirectorFilmSortedByLikeQuery = "SELECT f.*, fl.likes_count, mr.id AS mpa_id, mr.name AS mpa_name\n" +
+                "FROM films f\n" +
+                "LEFT JOIN (\n" +
+                "    SELECT film_id, COUNT(user_id) AS likes_count\n" +
+                "    FROM film_likes\n" +
+                "    GROUP BY film_id\n" +
+                ") fl ON fl.film_id = f.id\n" +
+                "LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id\n" +
+                "WHERE f.id IN (\n" +
+                "    SELECT film_id\n" +
+                "    FROM film_directors fd \n" +
+                "    WHERE fd.director_id = ?\n" +
+                ")\n" +
+                "ORDER BY fl.likes_count DESC";
+
+        return jdbc.query(getDirectorFilmSortedByLikeQuery, mapper, directorId);
+    }
+
 }

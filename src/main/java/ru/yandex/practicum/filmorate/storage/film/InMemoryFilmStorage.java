@@ -57,6 +57,12 @@ public class InMemoryFilmStorage implements FilmStorage {
         return List.of();
     }
 
+    @Override
+    public Collection<Film> getDirectorFilmSortedByLike(Long directorId) {
+        //TODO
+        return List.of();
+    }
+
 
     public void addLike(Long userId, Long filmId) {
         getById(filmId)

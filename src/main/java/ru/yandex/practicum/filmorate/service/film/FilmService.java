@@ -87,6 +87,7 @@ public class FilmService {
      */
     public Film update(Film newFilm) {
         log.debug("Checking existence of film with ID {}", newFilm.getId());
+        //TODO add validation
         if (filmStorage.getById(newFilm.getId()).isPresent()) {
             log.trace("Updating film in storage");
             filmStorage.update(newFilm);
@@ -106,6 +107,20 @@ public class FilmService {
      */
     public Collection<Film> getTop(int count) {
         List<Film> films = filmStorage.getTop(count).stream().toList();
+        setGenresForFilms(films);
+        return films;
+    }
+
+    public Collection<Film> getFilmsByDirectorSorted(Long directorId, String sortBy) {
+        List<Film> films = new ArrayList<>();
+        if ("year".equalsIgnoreCase(sortBy)) {
+            //TODO
+            return films;
+        } else if ("likes".equalsIgnoreCase(sortBy)) {
+            films = filmStorage.getDirectorFilmSortedByLike(directorId).stream().toList();
+        } else {
+            throw new IllegalArgumentException("Invalid sortBy parameter");
+        }
         setGenresForFilms(films);
         return films;
     }
