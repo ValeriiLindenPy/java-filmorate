@@ -118,12 +118,22 @@ public class FilmService {
     /**
      * Retrieves the top-rated films.
      *
-     * @param count - int
-     * @return {@link Collection<Film>}
+     * @param count   - int
+     * @param genreId - Integer (nullable)
+     * @param year    - Integer (nullable)
+     * @return {@link List<Film>}
      */
-    public Collection<Film> getTop(int count) {
-        Map<Long, Set<Genre>> genres = genreStorage.getAllFilmsGenres();
-        List<Film> films = filmStorage.getTop(count).stream().toList();
+    public List<Film> getTop(int count, Integer genreId, Integer year) {
+        List<Film> films;
+        if (genreId != null && year != null) {
+            films = filmStorage.getTopYearAndGenre(count, genreId, year).stream().toList();
+        } else if (genreId != null) {
+            films = filmStorage.getTopByGenre(count, genreId).stream().toList();
+        } else if (year != null) {
+            films = filmStorage.getTopByYear(count, year).stream().toList();
+        } else {
+            films = filmStorage.getTop(count).stream().toList();
+        }
 
         setGenresForFilms(films);
         return films;
@@ -140,7 +150,6 @@ public class FilmService {
             film.setGenres(genres);
         }
     }
-
 
     /**
      * Generates a new unique ID for a film.

@@ -75,20 +75,68 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update(deleteFilmQuery, id);
     }
 
-
-
     @Override
     public Collection<Film> getTop(int count) {
-        String getLikesPopularQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
-                "FROM FILMS f \n" +
-                "JOIN  (SELECT fl.film_id, COUNT(fl.user_id) AS likes \n" +
-                "FROM FILM_LIKES fl\n" +
-                "GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id\n" +
-                "LEFT JOIN FILM_MPA fm ON f.ID = fm.FILM_ID\n" +
-                "LEFT JOIN MPA_RATINGS mr ON fm.MPA_ID = mr.ID\n" +
-                "ORDER BY likes_count.likes DESC\n" +
-                "LIMIT ?";
-        return jdbc.query(getLikesPopularQuery, mapper, count);
+        String query = """
+        SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
+        FROM FILMS f
+        JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
+              FROM FILM_LIKES fl
+              GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
+        LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID
+        ORDER BY likes_count.likes DESC
+        LIMIT ?;
+    """;
+        return jdbc.query(query, mapper, count);
     }
 
+    @Override
+    public Collection<Film> getTopByYear(int count, int year) {
+        String query = """
+        SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
+        FROM FILMS f
+        JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
+              FROM FILM_LIKES fl
+              GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
+        LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID
+        WHERE EXTRACT(YEAR FROM f.release_date) = ?
+        ORDER BY likes_count.likes DESC
+        LIMIT ?;
+    """;
+        return jdbc.query(query, mapper, year, count);
+    }
+
+    @Override
+    public Collection<Film> getTopByGenre(int count, int genreId) {
+        String query = """
+        SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
+        FROM FILMS f
+        JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
+              FROM FILM_LIKES fl
+              GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
+        LEFT JOIN FILM_GENRES fg ON f.ID = fg.film_id
+        LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID
+        WHERE fg.genre_id = ?
+        ORDER BY likes_count.likes DESC
+        LIMIT ?;
+    """;
+        return jdbc.query(query, mapper, genreId, count);
+    }
+
+    @Override
+    public Collection<Film> getTopYearAndGenre(int count, int genreId, int year) {
+        String query = """
+        SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
+        FROM FILMS f
+        JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
+              FROM FILM_LIKES fl
+              GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
+        LEFT JOIN FILM_GENRES fg ON f.ID = fg.film_id
+        LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID
+        WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ?
+        ORDER BY likes_count.likes DESC
+        LIMIT ?;
+    """;
+        return jdbc.query(query, mapper, genreId, year, count);
+    }
 }
