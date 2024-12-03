@@ -110,4 +110,19 @@ public class FilmDbStorage implements FilmStorage {
         return jdbc.query(getDirectorFilmSortedByLikeQuery, mapper, directorId);
     }
 
+
+    public Collection<Film> getDirectorFilmSortedByYear(Long directorId) {
+        String getDirectorFilmSortedByYearQuery = "SELECT f.*, EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) AS release_year ,  mr.ID AS mpa_id, mr.name AS mpa_name\n" +
+                "FROM FILMS f\n" +
+                "LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id\n" +
+                "WHERE f.ID IN (\n" +
+                "\tSELECT film_id\n" +
+                "\tFROM FILM_DIRECTORS fd \n" +
+                "\tWHERE fd.director_id = ?\n" +
+                ")\n" +
+                "ORDER BY release_year ASC";
+
+        return jdbc.query(getDirectorFilmSortedByYearQuery, mapper, directorId);
+    }
+
 }

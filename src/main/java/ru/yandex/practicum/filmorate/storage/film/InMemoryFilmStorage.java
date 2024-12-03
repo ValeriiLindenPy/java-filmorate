@@ -59,7 +59,13 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getDirectorFilmSortedByLike(Long directorId) {
-        //TODO
+        //TODO method for local storage sort by like
+        return List.of();
+    }
+
+    @Override
+    public Collection<Film> getDirectorFilmSortedByYear(Long directorId) {
+        //TODO method for local storage sort by year
         return List.of();
     }
 

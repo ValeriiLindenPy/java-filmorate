@@ -40,7 +40,7 @@ public class Film {
 
     private Set<Long> likes = new HashSet<>();
 
-    private Set<Long> director = new HashSet<>();
+    private Set<Director> directors = new HashSet<>();
 
     @NotNull(groups = ValidationMarker.OnCreate.class, message = "Продолжительность не может быть null.")
     @Positive(message = "Продолжительность не может быть отрицательной.",

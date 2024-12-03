@@ -22,8 +22,7 @@ import java.util.Collection;
 public class FilmController {
     private final FilmService filmService;
     private final LikeService likeService;
-    //todo
-//    private final DirectorService directorService;
+
 
     @GetMapping
     public Collection<Film> getAll() {

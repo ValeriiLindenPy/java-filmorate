@@ -78,7 +78,6 @@ public class GenreStorage {
         Map<Long, Set<Genre>> filmGenres = new HashMap<>();
 
         jdbc.query(sql, rs -> {
-            while (rs.next()) {
                 Long filmId = rs.getLong("film_id");
                 Genre genre = Genre.builder()
                         .id(rs.getLong("genre_id"))
@@ -86,7 +85,6 @@ public class GenreStorage {
                         .build();
 
                 filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
-            }
         });
 
         return filmGenres;

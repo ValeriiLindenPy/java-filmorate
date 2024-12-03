@@ -58,6 +58,7 @@ VALUES
 INSERT INTO film_genres (film_id, genre_id)
 VALUES
 (1, 6),
+(1, 3),
 (2, 6),
 (3, 6),
 (4, 3),
@@ -68,6 +69,7 @@ VALUES
 INSERT INTO film_directors (film_id, director_id)
 VALUES
 (1, 2),
+(1, 1),
 (2, 1);
 
 INSERT INTO film_mpa (film_id, mpa_id)

@@ -37,4 +37,6 @@ public interface FilmStorage {
 
     Collection<Film> getDirectorFilmSortedByLike(Long directorId);
 
+    Collection<Film> getDirectorFilmSortedByYear(Long directorId);
+
 }

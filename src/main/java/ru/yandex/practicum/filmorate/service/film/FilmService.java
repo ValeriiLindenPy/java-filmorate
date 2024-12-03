@@ -35,7 +35,7 @@ public class FilmService {
      */
     public Collection<Film> getAll() {
         List<Film> films = filmStorage.getAll().stream().toList();
-        setGenresForFilms(films);
+        setAdditionalFieldsForFilms(films);
         return films;
     }
 
@@ -73,6 +73,8 @@ public class FilmService {
         mpaStorage.saveMPA(film);
         //add film genres
         genreStorage.saveGenres(film);
+        //add film directors
+        directorStorage.saveDirectors(film);
         return film;
     }
 
@@ -87,12 +89,16 @@ public class FilmService {
      */
     public Film update(Film newFilm) {
         log.debug("Checking existence of film with ID {}", newFilm.getId());
-        //TODO add validation
         if (filmStorage.getById(newFilm.getId()).isPresent()) {
             log.trace("Updating film in storage");
+            // update film
             filmStorage.update(newFilm);
+            //update mpa
             mpaStorage.updateMPA(newFilm);
+            //update genres
             genreStorage.updateGenres(newFilm);
+            //update directors
+            directorStorage.updateDirectors(newFilm);
             return newFilm;
         }
         log.warn("Film with ID {} not found", newFilm.getId());
@@ -107,26 +113,26 @@ public class FilmService {
      */
     public Collection<Film> getTop(int count) {
         List<Film> films = filmStorage.getTop(count).stream().toList();
-        setGenresForFilms(films);
+        setAdditionalFieldsForFilms(films);
         return films;
     }
 
     public Collection<Film> getFilmsByDirectorSorted(Long directorId, String sortBy) {
-        List<Film> films = new ArrayList<>();
+        List<Film> films;
         if ("year".equalsIgnoreCase(sortBy)) {
-            //TODO
+            films = filmStorage.getDirectorFilmSortedByYear(directorId).stream().toList();
             return films;
         } else if ("likes".equalsIgnoreCase(sortBy)) {
             films = filmStorage.getDirectorFilmSortedByLike(directorId).stream().toList();
         } else {
             throw new IllegalArgumentException("Invalid sortBy parameter");
         }
-        setGenresForFilms(films);
+        setAdditionalFieldsForFilms(films);
         return films;
     }
 
     /**
-     * Set genres for a film.
+     * Set genres for films.
      * @param films
      */
     private void setGenresForFilms(List<Film> films) {
@@ -135,6 +141,23 @@ public class FilmService {
             Set<Genre> genres = filmGenres.getOrDefault(film.getId(), new HashSet<>());
             film.setGenres(genres);
         }
+    }
+
+    /**
+     * Set directors for films.
+     * @param films
+     */
+    private void setDirectorsForFilms(List<Film> films) {
+        Map<Long, Set<Director>> filmsDirectors = directorStorage.getAllFilmsDirectors();
+        for (Film film : films) {
+            Set<Director> directors = filmsDirectors.getOrDefault(film.getId(), new HashSet<>());
+            film.setDirectors(directors);
+        }
+    }
+
+    private void setAdditionalFieldsForFilms(List<Film> films) {
+        setGenresForFilms(films);
+        setDirectorsForFilms(films);
     }
 
 
@@ -178,14 +201,16 @@ public class FilmService {
      */
     private void validateFilmDirector(Film film) {
         // Validate directors
-        if (film.getDirector() != null && !film.getDirector().isEmpty()) {
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             Set<Long> availableDirectorIds = directorStorage.getAll().stream()
                     .map(Director::getId)
                     .collect(Collectors.toSet());
 
-            Set<Long> filmDirectorIds = film.getDirector();
+            Set<Long> filmDirectorsIds = film.getDirectors().stream()
+                    .map(Director::getId)
+                    .collect(Collectors.toSet());
 
-            if (!availableDirectorIds.containsAll(filmDirectorIds)) {
+            if (!availableDirectorIds.containsAll(filmDirectorsIds)) {
                 throw new ValidationException("Invalid film director!");
             }
         }
