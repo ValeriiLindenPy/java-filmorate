@@ -32,7 +32,11 @@ public interface FilmStorage {
      */
     void deleteById(Long id);
 
-
     Collection<Film> getTop(int count);
 
+    Collection<Film> getTopByYear(int count, int year);
+
+    Collection<Film> getTopByGenre(int count, int genreId);
+
+    Collection<Film> getTopYearAndGenre(int count, int genreId, int year);
 }
