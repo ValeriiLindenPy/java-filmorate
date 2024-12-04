@@ -121,7 +121,6 @@ public class FilmService {
         List<Film> films;
         if ("year".equalsIgnoreCase(sortBy)) {
             films = filmStorage.getDirectorFilmSortedByYear(directorId).stream().toList();
-            return films;
         } else if ("likes".equalsIgnoreCase(sortBy)) {
             films = filmStorage.getDirectorFilmSortedByLike(directorId).stream().toList();
         } else {

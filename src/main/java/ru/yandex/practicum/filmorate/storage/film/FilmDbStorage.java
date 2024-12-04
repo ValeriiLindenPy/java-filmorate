@@ -112,7 +112,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     public Collection<Film> getDirectorFilmSortedByYear(Long directorId) {
-        String getDirectorFilmSortedByYearQuery = "SELECT f.*, EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) AS release_year ,  mr.ID AS mpa_id, mr.name AS mpa_name\n" +
+        String getDirectorFilmSortedByYearQuery = "SELECT f.*, EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) AS release_year, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f\n" +
                 "LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id\n" +
                 "WHERE f.ID IN (\n" +

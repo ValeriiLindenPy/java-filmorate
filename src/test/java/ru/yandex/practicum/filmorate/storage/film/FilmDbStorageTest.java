@@ -9,8 +9,10 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.context.annotation.Import;
 
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
@@ -24,12 +26,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class,
-LikeStorage.class})
+LikeStorage.class, DirectorStorage.class, DirectorRowMapper.class})
 @Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
 public class FilmDbStorageTest {
     private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
     private final LikeStorage likeStorage;
+    private final DirectorStorage directorStorage;
 
     @Test
     public void testGetById() {
@@ -139,5 +142,11 @@ public class FilmDbStorageTest {
         Film topFilm = topFilms.iterator().next();
 
         assertThat(topFilm.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    public void testDirectorFilmsByLikes() {
+
+
     }
 }
