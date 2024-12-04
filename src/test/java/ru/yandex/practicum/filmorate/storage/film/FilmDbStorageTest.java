@@ -17,7 +17,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -31,8 +31,6 @@ LikeStorage.class, DirectorStorage.class, DirectorRowMapper.class})
 public class FilmDbStorageTest {
     private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
-    private final LikeStorage likeStorage;
-    private final DirectorStorage directorStorage;
 
     @Test
     public void testGetById() {
@@ -53,7 +51,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void testGetAll() {
-        Collection<Film> films = filmStorage.getAll();
+        List<Film> films = filmStorage.getAll();
 
         assertThat(films).hasSize(5);
     }
@@ -132,10 +130,8 @@ public class FilmDbStorageTest {
 
     @Test
     public void testGetTop() {
-        likeStorage.addLike(1L, 2L);
-        likeStorage.addLike(2L, 2L);
 
-        Collection<Film> topFilms = filmStorage.getTop(2);
+        List<Film> topFilms = filmStorage.getTop(2);
 
         assertThat(topFilms).hasSize(2);
 
@@ -146,7 +142,15 @@ public class FilmDbStorageTest {
 
     @Test
     public void testDirectorFilmsByLikes() {
+        List<Film> directorFilms = filmStorage.getDirectorFilmSortedByLike(1L);
+        assertThat(directorFilms).hasSize(2);
+        assertThat(directorFilms).first().isEqualTo(filmStorage.getById(2L).get());
+    }
 
-
+    @Test
+    public void testDirectorFilmsByYear() {
+        List<Film> directorFilms = filmStorage.getDirectorFilmSortedByYear(1L);
+        assertThat(directorFilms).hasSize(2);
+        assertThat(directorFilms).first().isEqualTo(filmStorage.getById(1L).get());
     }
 }

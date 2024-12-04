@@ -33,8 +33,8 @@ public class FilmService {
      *
      * @return {@link Collection<Film>}
      */
-    public Collection<Film> getAll() {
-        List<Film> films = filmStorage.getAll().stream().toList();
+    public List<Film> getAll() {
+        List<Film> films = filmStorage.getAll();
         setAdditionalFieldsForFilms(films);
         return films;
     }
@@ -109,20 +109,20 @@ public class FilmService {
      * Retrieves the top-rated films.
      *
      * @param count - int
-     * @return {@link Collection<Film>}
+     * @return {@link List<Film>}
      */
-    public Collection<Film> getTop(int count) {
-        List<Film> films = filmStorage.getTop(count).stream().toList();
+    public List<Film> getTop(int count) {
+        List<Film> films = filmStorage.getTop(count);
         setAdditionalFieldsForFilms(films);
         return films;
     }
 
-    public Collection<Film> getFilmsByDirectorSorted(Long directorId, String sortBy) {
+    public List<Film> getFilmsByDirectorSorted(Long directorId, String sortBy) {
         List<Film> films;
         if ("year".equalsIgnoreCase(sortBy)) {
-            films = filmStorage.getDirectorFilmSortedByYear(directorId).stream().toList();
+            films = filmStorage.getDirectorFilmSortedByYear(directorId);
         } else if ("likes".equalsIgnoreCase(sortBy)) {
-            films = filmStorage.getDirectorFilmSortedByLike(directorId).stream().toList();
+            films = filmStorage.getDirectorFilmSortedByLike(directorId);
         } else {
             throw new IllegalArgumentException("Invalid sortBy parameter");
         }

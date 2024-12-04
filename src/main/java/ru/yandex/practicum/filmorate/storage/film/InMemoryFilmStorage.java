@@ -23,8 +23,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getAll() {
-        return films.values();
+    public List<Film> getAll() {
+        return films.values().stream().toList();
     }
 
     @Override
@@ -53,18 +53,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTop(int count) {
+    public List<Film> getTop(int count) {
         return List.of();
     }
 
     @Override
-    public Collection<Film> getDirectorFilmSortedByLike(Long directorId) {
+    public List<Film> getDirectorFilmSortedByLike(Long directorId) {
         //TODO method for local storage sort by like
         return List.of();
     }
 
     @Override
-    public Collection<Film> getDirectorFilmSortedByYear(Long directorId) {
+    public List<Film> getDirectorFilmSortedByYear(Long directorId) {
         //TODO method for local storage sort by year
         return List.of();
     }

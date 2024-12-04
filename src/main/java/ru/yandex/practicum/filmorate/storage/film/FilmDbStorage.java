@@ -33,7 +33,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public Collection<Film> getAll() {
+    public List<Film> getAll() {
         String findAllFilmsQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f\n" +
                 "LEFT JOIN FILM_MPA fm ON f.ID = fm.FILM_ID  \n" +
@@ -78,7 +78,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public Collection<Film> getTop(int count) {
+    public List<Film> getTop(int count) {
         String getLikesPopularQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f \n" +
                 "JOIN  (SELECT fl.film_id, COUNT(fl.user_id) AS likes \n" +
@@ -91,7 +91,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbc.query(getLikesPopularQuery, mapper, count);
     }
 
-    public Collection<Film> getDirectorFilmSortedByLike(Long directorId) {
+    public List<Film> getDirectorFilmSortedByLike(Long directorId) {
         String getDirectorFilmSortedByLikeQuery = "SELECT f.*, fl.likes_count, mr.id AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM films f\n" +
                 "LEFT JOIN (\n" +
@@ -111,7 +111,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
 
-    public Collection<Film> getDirectorFilmSortedByYear(Long directorId) {
+    public List<Film> getDirectorFilmSortedByYear(Long directorId) {
         String getDirectorFilmSortedByYearQuery = "SELECT f.*, EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) AS release_year, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f\n" +
                 "LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id\n" +

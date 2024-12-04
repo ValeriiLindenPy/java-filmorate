@@ -4,16 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
-import ru.yandex.practicum.filmorate.service.director.DirectorService;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.service.like.LikeService;
-
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -25,7 +22,7 @@ public class FilmController {
 
 
     @GetMapping
-    public Collection<Film> getAll() {
+    public List<Film> getAll() {
         return filmService.getAll();
     }
 
@@ -36,12 +33,12 @@ public class FilmController {
 
 
     @GetMapping("/popular")
-    public Collection<Film> getTop(@RequestParam(defaultValue = "10") int count) {
+    public List<Film> getTop(@RequestParam(defaultValue = "10") int count) {
         return filmService.getTop(count);
     }
 
     @GetMapping("/director/{directorId}")
-    public Collection<Film> getFilmsByDirector(
+    public List<Film> getFilmsByDirector(
             @PathVariable Long directorId,
             @RequestParam(defaultValue = "likes") String sortBy) {
 

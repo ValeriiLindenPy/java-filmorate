@@ -19,8 +19,8 @@ public class DirectorStorage {
 
     public Optional<Director> getById(Long id) {
         try {
-            String FIND_DIRECTOR_BY_ID_QUERY = "SELECT * FROM directors WHERE id = ?";
-            Director director = jdbc.queryForObject(FIND_DIRECTOR_BY_ID_QUERY, mapper, id);
+            String findDirectorByIdQuery = "SELECT * FROM directors WHERE id = ?";
+            Director director = jdbc.queryForObject(findDirectorByIdQuery, mapper, id);
             return Optional.of(director);
         } catch (DataAccessException ignored) {
             return Optional.empty();
@@ -28,8 +28,8 @@ public class DirectorStorage {
     }
 
     public List<Director> getAll() {
-        String FIND_ALL_DIRECTORS_QUERY = "SELECT * FROM directors";
-        return jdbc.query(FIND_ALL_DIRECTORS_QUERY, mapper);
+        String findAllDirectorsQuery = "SELECT * FROM directors";
+        return jdbc.query(findAllDirectorsQuery, mapper);
     }
 
     public Director create(Director director) {
@@ -51,21 +51,21 @@ public class DirectorStorage {
     }
 
     public Map<Long, Set<Director>> getAllFilmsDirectors() {
-        String sql = "SELECT f.ID AS film_id, d.ID AS director_id, d.NAME AS director_name\n" +
+        String getAllFilmsDirectorsQuery = "SELECT f.ID AS film_id, d.ID AS director_id, d.NAME AS director_name\n" +
                 "FROM FILMS f\n" +
                 "LEFT JOIN FILM_DIRECTORS fd ON fd.FILM_ID = f.ID \n" +
                 "LEFT JOIN DIRECTORS d ON d.ID = fd.DIRECTOR_ID";
         Map<Long, Set<Director>> filmDirectors = new HashMap<>();
 
-        jdbc.query(sql, rs -> {
+        jdbc.query(getAllFilmsDirectorsQuery, rs -> {
             Long filmId = rs.getLong("film_id");
             Long directorId = rs.getObject("director_id", Long.class);
-            String director_name = rs.getString("director_name");
+            String directorName = rs.getString("director_name");
 
             filmDirectors.computeIfAbsent(filmId, k -> new HashSet<>());
             if (directorId != null) {
                 filmDirectors.get(filmId).add(Director.builder()
-                        .id(directorId).name(director_name).build());
+                        .id(directorId).name(directorName).build());
             }
         });
 

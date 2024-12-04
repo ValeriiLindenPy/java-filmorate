@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.mpa.MPAService;
-
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -20,7 +19,7 @@ public class MPAController {
     private final MPAService mpaService;
 
     @GetMapping
-    public Collection<MPA> getAll() {
+    public List<MPA> getAll() {
         return mpaService.getAll();
     }
 
