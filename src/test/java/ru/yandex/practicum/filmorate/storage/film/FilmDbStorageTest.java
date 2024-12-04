@@ -4,11 +4,11 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.context.annotation.Import;
-
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
@@ -18,14 +18,13 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class,
-LikeStorage.class})
-@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
+        LikeStorage.class})
+@AutoConfigureTestDatabase
 public class FilmDbStorageTest {
     private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
@@ -124,7 +123,6 @@ public class FilmDbStorageTest {
 
         assertThat(optionalFilm).isNotPresent();
     }
-
 
 
     @Test
