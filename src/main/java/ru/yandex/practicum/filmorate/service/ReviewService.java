@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.dto.RequestUpdateReviewDto;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -53,6 +54,10 @@ public class ReviewService {
         }
 
         if (reviewDto.getContent() != null) {
+            if (reviewDto.getContent().isBlank()) {
+                throw new ValidationException("Content cannot be blank");
+            }
+
             review.setContent(reviewDto.getContent());
         }
 

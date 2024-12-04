@@ -8,6 +8,8 @@ DELETE FROM mpa_ratings;
 DELETE FROM user_friendships;
 DELETE FROM users;
 DELETE FROM film_likes;
+DELETE FROM reviews;
+DELETE FROM review_ratings;
 
 -- add users
 INSERT INTO users (id, email, login, name, password, birthday) VALUES

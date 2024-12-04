@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -15,7 +14,6 @@ public class RequestUpdateReviewDto {
     private Long reviewId;
 
     @Size(max = 1000, message = "Content length must be under 1000 characters")
-    @NotBlank
     private String content;      // Текст отзыва
 
     private Boolean isPositive;  // Тип отзыва (положительный/негативный)
