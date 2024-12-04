@@ -130,6 +130,20 @@ public class FilmService {
     }
 
     /**
+     * Get common films between the user and their friend, sorted by popularity
+     *
+     * @param userId - long
+     * @param friendId - long
+     * @return list of common films
+     */
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+        setGenresForFilms(commonFilms);
+
+        return commonFilms;
+    }
+
+    /**
      * Set genres for a film.
      * @param films
      */
