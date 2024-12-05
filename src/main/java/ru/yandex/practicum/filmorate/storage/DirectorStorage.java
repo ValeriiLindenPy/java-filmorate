@@ -51,10 +51,10 @@ public class DirectorStorage {
     }
 
     public Map<Long, Set<Director>> getAllFilmsDirectors() {
-        String getAllFilmsDirectorsQuery = "SELECT f.ID AS film_id, d.ID AS director_id, d.NAME AS director_name\n" +
-                "FROM FILMS f\n" +
-                "LEFT JOIN FILM_DIRECTORS fd ON fd.FILM_ID = f.ID \n" +
-                "LEFT JOIN DIRECTORS d ON d.ID = fd.DIRECTOR_ID";
+        String getAllFilmsDirectorsQuery = "SELECT f.id AS film_id, d.id AS director_id, d.name AS director_name\n" +
+                "FROM films f\n" +
+                "LEFT JOIN film_directors fd ON fd.film_id = f.id \n" +
+                "LEFT JOIN directors d ON d.id = fd.director_id";
         Map<Long, Set<Director>> filmDirectors = new HashMap<>();
 
         jdbc.query(getAllFilmsDirectorsQuery, rs -> {
