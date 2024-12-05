@@ -75,13 +75,11 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update(deleteFilmQuery, id);
     }
 
-
-
     @Override
     public List<Film> getTop(int count) {
         String getLikesPopularQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f \n" +
-                "JOIN  (SELECT fl.film_id, COUNT(fl.user_id) AS likes \n" +
+                "LEFT JOIN  (SELECT fl.film_id, COUNT(fl.user_id) AS likes \n" +
                 "FROM FILM_LIKES fl\n" +
                 "GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id\n" +
                 "LEFT JOIN FILM_MPA fm ON f.ID = fm.FILM_ID\n" +
