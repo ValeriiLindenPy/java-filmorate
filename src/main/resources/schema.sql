@@ -25,6 +25,12 @@ CREATE TABLE IF NOT EXISTS genres (
     name VARCHAR(50) NOT NULL
 );
 
+-- Director Table
+CREATE TABLE IF NOT EXISTS directors (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
 -- MPA ratings Table
 CREATE TABLE IF NOT EXISTS mpa_ratings (
     id BIGINT PRIMARY KEY,
@@ -49,6 +55,15 @@ CREATE TABLE IF NOT EXISTS film_genres (
     CONSTRAINT fk_film FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
     CONSTRAINT fk_genre FOREIGN KEY (genre_id) REFERENCES genres (id) ON DELETE CASCADE,
     CONSTRAINT unique_film_genre UNIQUE (film_id, genre_id)
+);
+
+-- Films genres Table
+CREATE TABLE IF NOT EXISTS film_directors (
+    film_id BIGINT NOT NULL,
+    director_id BIGINT NOT NULL,
+    CONSTRAINT fk_film_directors FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
+    CONSTRAINT fk_director FOREIGN KEY (director_id) REFERENCES directors (id) ON DELETE CASCADE,
+    CONSTRAINT unique_film_director UNIQUE (film_id, director_id)
 );
 
 

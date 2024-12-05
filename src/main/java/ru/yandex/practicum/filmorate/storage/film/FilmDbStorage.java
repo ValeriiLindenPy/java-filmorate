@@ -33,7 +33,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public Collection<Film> getAll() {
+    public List<Film> getAll() {
         String findAllFilmsQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f\n" +
                 "LEFT JOIN FILM_MPA fm ON f.ID = fm.FILM_ID  \n" +
@@ -78,7 +78,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public Collection<Film> getTop(int count) {
+    public List<Film> getTop(int count) {
         String getLikesPopularQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM FILMS f \n" +
                 "JOIN  (SELECT fl.film_id, COUNT(fl.user_id) AS likes \n" +
@@ -89,6 +89,42 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY likes_count.likes DESC\n" +
                 "LIMIT ?";
         return jdbc.query(getLikesPopularQuery, mapper, count);
+    }
+
+    public List<Film> getDirectorFilmSortedByLike(Long directorId) {
+        String getDirectorFilmSortedByLikeQuery = "SELECT f.*, fl.likes_count, mr.id AS mpa_id, mr.name AS mpa_name\n" +
+                "FROM films f\n" +
+                "LEFT JOIN (\n" +
+                "    SELECT film_id, COUNT(user_id) AS likes_count\n" +
+                "    FROM film_likes\n" +
+                "    GROUP BY film_id\n" +
+                ") fl ON fl.film_id = f.id\n" +
+                "LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id\n" +
+                "WHERE f.id IN (\n" +
+                "    SELECT film_id\n" +
+                "    FROM film_directors fd \n" +
+                "    WHERE fd.director_id = ?\n" +
+                ")\n" +
+                "ORDER BY fl.likes_count DESC";
+
+        return jdbc.query(getDirectorFilmSortedByLikeQuery, mapper, directorId);
+    }
+
+
+    public List<Film> getDirectorFilmSortedByYear(Long directorId) {
+        String getDirectorFilmSortedByYearQuery = "SELECT f.*,\n" +
+                "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) AS release_year,\n" +
+                "mr.ID AS mpa_id, mr.name AS mpa_name\n" +
+                "FROM FILMS f\n" +
+                "LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id\n" +
+                "WHERE f.ID IN (\n" +
+                "\tSELECT film_id\n" +
+                "\tFROM FILM_DIRECTORS fd \n" +
+                "\tWHERE fd.director_id = ?\n" +
+                ")\n" +
+                "ORDER BY release_year ASC";
+
+        return jdbc.query(getDirectorFilmSortedByYearQuery, mapper, directorId);
     }
 
 }

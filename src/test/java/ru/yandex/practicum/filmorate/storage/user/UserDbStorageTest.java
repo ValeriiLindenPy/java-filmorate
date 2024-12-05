@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mapper.UserRowMapper;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +42,7 @@ public class UserDbStorageTest {
 
     @Test
     public void testGetAll() {
-        Collection<User> users = userStorage.getAll();
+        List<User> users = userStorage.getAll();
 
         assertThat(users).hasSize(3);
     }
@@ -108,5 +108,4 @@ public class UserDbStorageTest {
         Optional<User> deletedUser = userStorage.getById(1L);
         assertThat(deletedUser).isNotPresent();
     }
-
 }
