@@ -196,4 +196,33 @@ public class UserService {
                 .orElse(0);
         return ++currentId;
     }
+
+    /**
+     * Deletes a user and all related data by user ID.
+     *
+     * @param userId ID of the user to be deleted
+     * @throws NotFoundException if the user does not exist
+     */
+    public void deleteById(long userId) {
+        log.debug("Attempting to delete user with ID {}", userId);
+        if (userStorage.getById(userId).isEmpty()) {
+            log.warn("User with ID {} not found", userId);
+            throw new NotFoundException("User with ID " + userId + " not found");
+        }
+        log.trace("Deleting user ID {}", userId);
+        userStorage.deleteById(userId);
+        log.info("Successfully deleted user with ID {}", userId);
+    }
+
+    /**
+     * Retrieves a user by ID.
+     *
+     * @param userId ID of the user to retrieve
+     * @return the user object if found
+     * @throws NotFoundException if the user does not exist
+     */
+    public Optional<User> getUserById(long userId) {
+        log.debug("Attempting to retrieve user with ID {}", userId);
+        return userStorage.getById(userId);
+    }
 }

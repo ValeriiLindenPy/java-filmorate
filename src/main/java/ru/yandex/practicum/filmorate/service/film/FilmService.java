@@ -68,18 +68,13 @@ public class FilmService {
         //set film id
         film.setId(generateId());
         log.trace("Adding film to storage");
-        // add film to storage
         filmStorage.create(film);
-        //add film mpa
         mpaStorage.saveMPA(film);
-        //add film genres
         genreStorage.saveGenres(film);
         //add film directors
         directorStorage.saveDirectors(film);
         return film;
     }
-
-
 
     /**
      * Updates an existing film.
@@ -252,6 +247,7 @@ public class FilmService {
         validateFilmDirector(film);
     }
 
+
     public List<Film> search(String query, String searchBy) {
         if (query == null || (FilmsSearchBy.from(searchBy) == null)) {
             log.warn("Invalid search by parameter");
@@ -260,5 +256,22 @@ public class FilmService {
         List<Film> films = (filmStorage.searchByParam(query, FilmsSearchBy.from(searchBy)));
         setAdditionalFieldsForFilms(films);
         return films;
+    }
+
+    /**
+     * Deletes a film and all related data by film ID.
+     *
+     * @param filmId ID of the film to be deleted
+     * @throws NotFoundException if the film does not exist
+     */
+    public void deleteById(long filmId) {
+        log.debug("Attempting to delete film with ID {}", filmId);
+        if (filmStorage.getById(filmId).isEmpty()) {
+            log.warn("Film with ID {} not found", filmId);
+            throw new NotFoundException("Film with ID " + filmId + " not found");
+        }
+        log.trace("Deleting film ID {}", filmId);
+        filmStorage.deleteById(filmId);
+        log.info("Successfully deleted film with ID {}", filmId);
     }
 }
