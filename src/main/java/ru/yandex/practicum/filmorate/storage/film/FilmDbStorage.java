@@ -138,7 +138,7 @@ public class FilmDbStorage implements FilmStorage {
             case ALL -> partWhereClause = " WHERE f.NAME ILIKE CONCAT('%',?,'%') OR d.NAME ILIKE CONCAT('%',?,'%')";
         }
         String findFilmsByParamQuery = """
-                SELECT f.ID
+                SELECT DISTINCT f.ID
                 , f.NAME
                 , f.DESCRIPTION
                 , f.DURATION

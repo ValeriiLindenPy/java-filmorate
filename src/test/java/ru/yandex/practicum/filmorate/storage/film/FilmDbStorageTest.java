@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
@@ -152,5 +153,21 @@ public class FilmDbStorageTest {
         List<Film> directorFilms = filmStorage.getDirectorFilmSortedByYear(1L);
         assertThat(directorFilms).hasSize(2);
         assertThat(directorFilms).first().isEqualTo(filmStorage.getById(1L).get());
+    }
+
+    @Test
+    public void searchByParam() {
+        List<Film> films = filmStorage.searchByParam("matrix", FilmsSearchBy.TITLE);
+        assertThat(films).hasSize(1);
+        assertThat(films).first().isEqualTo(filmStorage.getById(1L).get());
+
+        films = filmStorage.searchByParam("ron", FilmsSearchBy.DIRECTOR);
+        assertThat(films).hasSize(1);
+        assertThat(films).first().isEqualTo(filmStorage.getById(1L).get());
+
+        films = filmStorage.searchByParam("on", FilmsSearchBy.ALL);
+        assertThat(films).hasSize(2);
+        assertThat(films).first().isEqualTo(filmStorage.getById(2L).get());
+        assertThat(films).last().isEqualTo(filmStorage.getById(1L).get());
     }
 }

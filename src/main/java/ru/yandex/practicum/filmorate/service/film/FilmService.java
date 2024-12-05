@@ -252,14 +252,13 @@ public class FilmService {
         validateFilmDirector(film);
     }
 
-
     public List<Film> search(String query, String searchBy) {
         if (query == null || (FilmsSearchBy.from(searchBy) == null)) {
             log.warn("Invalid search by parameter");
             throw new ValidationException("Invalid search by parameter");
         }
         List<Film> films = (filmStorage.searchByParam(query, FilmsSearchBy.from(searchBy)));
-        setGenresForFilms(films);
+        setAdditionalFieldsForFilms(films);
         return films;
     }
 }
