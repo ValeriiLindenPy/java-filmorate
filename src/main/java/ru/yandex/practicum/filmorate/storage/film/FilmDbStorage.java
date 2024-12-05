@@ -6,9 +6,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Primary
@@ -76,7 +79,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
 
-
     @Override
     public Collection<Film> getTop(int count) {
         String getLikesPopularQuery = "SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name\n" +
@@ -91,4 +93,34 @@ public class FilmDbStorage implements FilmStorage {
         return jdbc.query(getLikesPopularQuery, mapper, count);
     }
 
+    @Override
+    public List<Film> searchByParam(String query, FilmsSearchBy param) {
+        String partOrder = " ORDER BY cnt DESC";
+        String partWhereClause = "";
+        switch (param) {
+            case TITLE -> partWhereClause = " WHERE f.NAME ILIKE CONCAT('%',?,'%') ";
+            case DIRECTOR -> partWhereClause = " WHERE d.NAME ILIKE CONCAT('%',?,'%') ";
+            case ALL -> partWhereClause = " WHERE f.NAME ILIKE CONCAT('%',?,'%') OR d.NAME ILIKE CONCAT('%',?,'%')";
+        }
+        String findFilmsByParamQuery = """
+                SELECT f.ID
+                , f.NAME
+                , f.DESCRIPTION
+                , f.DURATION
+                , f.RELEASE_DATE
+                , mr.ID AS MPA_ID
+                , mr.NAME AS MPA_NAME
+                , COUNT(fl.USER_ID) OVER (PARTITION BY f.ID) cnt
+                FROM FILMS f
+                LEFT JOIN FILM_MPA fm ON f.ID = fm.FILM_ID
+                LEFT JOIN MPA_RATINGS mr ON fm.MPA_ID = mr.ID
+                LEFT JOIN FILM_LIKES fl ON fl.FILM_ID = f.ID
+                LEFT JOIN FILM_DIRECTORS fd ON fd.FILM_ID = f.ID
+                LEFT JOIN DIRECTORS d ON d.ID = fd.DIRECTOR_ID
+                """ + partWhereClause + partOrder;
+        if (param == FilmsSearchBy.ALL) {
+            return jdbc.query(findFilmsByParamQuery, mapper, query, query);
+        }
+        return jdbc.query(findFilmsByParamQuery, mapper, query);
+    }
 }

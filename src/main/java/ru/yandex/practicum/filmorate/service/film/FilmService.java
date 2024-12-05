@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -131,6 +131,7 @@ public class FilmService {
 
     /**
      * Set genres for a film.
+     *
      * @param films
      */
     private void setGenresForFilms(List<Film> films) {
@@ -153,5 +154,15 @@ public class FilmService {
                 .max()
                 .orElse(0);
         return ++currentId;
+    }
+
+    public List<Film> search(String query, String searchBy) {
+        if (query == null || (FilmsSearchBy.from(searchBy) == null)) {
+            log.warn("Invalid search by parameter");
+            throw new ValidationException("Invalid search by parameter");
+        }
+        List<Film> films = (filmStorage.searchByParam(query, FilmsSearchBy.from(searchBy)));
+        setGenresForFilms(films);
+        return films;
     }
 }

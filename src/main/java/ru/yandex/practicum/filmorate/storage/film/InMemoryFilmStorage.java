@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 
 import java.util.*;
 
@@ -54,6 +55,11 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getTop(int count) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> searchByParam(String query, FilmsSearchBy param) {
         return List.of();
     }
 

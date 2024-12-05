@@ -44,4 +44,6 @@ public class Film {
     @Positive(message = "Продолжительность не может быть отрицательной.",
             groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
     private Integer duration;
+
+    private Set<Long> directors = new HashSet<>();
 }
