@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,17 +21,17 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Collection<User> getAll() {
+    public List<User> getAll() {
         return userService.getAll();
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(@PathVariable long id) {
+    public List<User> getFriends(@PathVariable long id) {
         return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriend(@PathVariable long id,
+    public List<User> getCommonFriend(@PathVariable long id,
                                             @PathVariable long otherId) {
         return userService.getCommonFriend(id, otherId);
     }

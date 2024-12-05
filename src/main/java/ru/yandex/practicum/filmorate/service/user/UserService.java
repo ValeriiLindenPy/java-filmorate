@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,9 +22,9 @@ public class UserService {
     /**
      * Retrieves all users.
      *
-     * @return Collection<User>
+     * @return List<User>
      */
-    public Collection<User> getAll() {
+    public List<User> getAll() {
         return userStorage.getAll();
     }
 
@@ -137,10 +137,10 @@ public class UserService {
      *
      * @param userId
      * @param otherId
-     * @return Collection<User>
+     * @return List<User>
      * @throws NotFoundException
      */
-    public Collection<User> getCommonFriend(Long userId, Long otherId) {
+    public List<User> getCommonFriend(Long userId, Long otherId) {
         if (!usersIdsValidation(userId, otherId)) {
             log.error("One or both user IDs are invalid.");
             throw new NotFoundException("One or both users not found!");
@@ -153,10 +153,10 @@ public class UserService {
      * Retrieves the friend list of a user.
      *
      * @param userId
-     * @return Collection<User>
+     * @return List<User>
      * @throws NotFoundException
      */
-    public Collection<User> getFriends(Long userId) {
+    public List<User> getFriends(Long userId) {
         log.trace("Validating user ID.");
         if (!userStorage.getById(userId).isPresent()) {
             log.error("User ID {} not found.", userId);
@@ -164,7 +164,7 @@ public class UserService {
         }
 
         log.trace("Fetching friends for user ID: {}", userId);
-        Collection<User> friends = userStorage.getFriends(userId);
+        List<User> friends = userStorage.getFriends(userId);
 
         log.info("Found {} friends for user ID: {}", friends.size(), userId);
         return friends;

@@ -4,32 +4,34 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.context.annotation.Import;
 
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorRowMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class,
-LikeStorage.class})
-@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
+        LikeStorage.class, DirectorStorage.class, DirectorRowMapper.class})
+@AutoConfigureTestDatabase
 public class FilmDbStorageTest {
     private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
-    private final LikeStorage likeStorage;
 
     @Test
     public void testGetById() {
@@ -50,7 +52,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void testGetAll() {
-        Collection<Film> films = filmStorage.getAll();
+        List<Film> films = filmStorage.getAll();
 
         assertThat(films).hasSize(5);
     }
@@ -126,18 +128,29 @@ public class FilmDbStorageTest {
     }
 
 
-
     @Test
     public void testGetTop() {
-        likeStorage.addLike(1L, 2L);
-        likeStorage.addLike(2L, 2L);
 
-        Collection<Film> topFilms = filmStorage.getTop(2);
+        List<Film> topFilms = filmStorage.getTop(2);
 
         assertThat(topFilms).hasSize(2);
 
         Film topFilm = topFilms.iterator().next();
 
         assertThat(topFilm.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    public void testDirectorFilmsByLikes() {
+        List<Film> directorFilms = filmStorage.getDirectorFilmSortedByLike(1L);
+        assertThat(directorFilms).hasSize(2);
+        assertThat(directorFilms).first().isEqualTo(filmStorage.getById(2L).get());
+    }
+
+    @Test
+    public void testDirectorFilmsByYear() {
+        List<Film> directorFilms = filmStorage.getDirectorFilmSortedByYear(1L);
+        assertThat(directorFilms).hasSize(2);
+        assertThat(directorFilms).first().isEqualTo(filmStorage.getById(1L).get());
     }
 }
