@@ -125,14 +125,15 @@ public class FilmService {
      */
     public List<Film> getTop(int count, Integer genreId, Integer year) {
         List<Film> films;
+
         if (genreId != null && year != null) {
-            films = filmStorage.getTopYearAndGenre(count, genreId, year).stream().toList();
+            films = filmStorage.getTopYearAndGenre(count, genreId, year);
         } else if (genreId != null) {
-            films = filmStorage.getTopByGenre(count, genreId).stream().toList();
+            films = filmStorage.getTopByGenre(count, genreId);
         } else if (year != null) {
-            films = filmStorage.getTopByYear(count, year).stream().toList();
+            films = filmStorage.getTopByYear(count, year);
         } else {
-            films = filmStorage.getTop(count).stream().toList();
+            films = filmStorage.getTop(count);
         }
 
         setGenresForFilms(films);

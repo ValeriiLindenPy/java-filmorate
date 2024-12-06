@@ -85,7 +85,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTop(int count) {
+    public List<Film> getTop(int count) {
         String query = BASE_FILM_QUERY + """
             ORDER BY likes_count.likes DESC
             LIMIT ?;
@@ -94,7 +94,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopByYear(int count, int year) {
+    public List<Film> getTopByYear(int count, int year) {
         String query = BASE_FILM_QUERY + """
             WHERE EXTRACT(YEAR FROM f.release_date) = ?
             ORDER BY likes_count.likes DESC
@@ -104,7 +104,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopByGenre(int count, int genreId) {
+    public List<Film> getTopByGenre(int count, int genreId) {
         String query = BASE_FILM_QUERY + """
             WHERE fg.genre_id = ?
             ORDER BY likes_count.likes DESC
@@ -114,7 +114,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopYearAndGenre(int count, int genreId, int year) {
+    public List<Film> getTopYearAndGenre(int count, int genreId, int year) {
         String query = BASE_FILM_QUERY + """
             WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ?
             ORDER BY likes_count.likes DESC

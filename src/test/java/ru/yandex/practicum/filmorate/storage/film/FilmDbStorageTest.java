@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -143,7 +144,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void testGetTopYearAndGenre() {
-        Collection<Film> topFilmsByYearAndGenre = filmStorage.getTopYearAndGenre(1, 6, 1999);
+        List<Film> topFilmsByYearAndGenre = filmStorage.getTopYearAndGenre(1, 6, 1999);
 
         assertThat(topFilmsByYearAndGenre)
                 .isNotNull()

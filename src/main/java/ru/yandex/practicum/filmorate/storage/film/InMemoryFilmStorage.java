@@ -53,7 +53,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTop(int count) {
+    public List<Film> getTop(int count) {
         return films.values().stream()
                 .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
                 .limit(count)
@@ -61,7 +61,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopByYear(int count, int year) {
+    public List<Film> getTopByYear(int count, int year) {
         return films.values().stream()
                 .filter(film -> film.getReleaseDate().getYear() == year)
                 .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
@@ -70,7 +70,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopByGenre(int count, int genreId) {
+    public List<Film> getTopByGenre(int count, int genreId) {
         return films.values().stream()
                 .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
                 .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
@@ -79,7 +79,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTopYearAndGenre(int count, int genreId, int year) {
+    public List<Film> getTopYearAndGenre(int count, int genreId, int year) {
         return films.values().stream()
                 .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
                 .filter(film -> film.getReleaseDate().getYear() == year)

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
@@ -32,11 +33,11 @@ public interface FilmStorage {
      */
     void deleteById(Long id);
 
-    Collection<Film> getTop(int count);
+    List<Film> getTop(int count);
 
-    Collection<Film> getTopByYear(int count, int year);
+    List<Film> getTopByYear(int count, int year);
 
-    Collection<Film> getTopByGenre(int count, int genreId);
+    List<Film> getTopByGenre(int count, int genreId);
 
-    Collection<Film> getTopYearAndGenre(int count, int genreId, int year);
+    List<Film> getTopYearAndGenre(int count, int genreId, int year);
 }

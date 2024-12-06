@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.service.like.LikeService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -32,9 +33,9 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTop(@RequestParam(defaultValue = "10") int count,
-                                   @RequestParam(required = false) Integer genreId,
-                                   @RequestParam(required = false) Integer year) {
+    public List<Film> getTop(@RequestParam(defaultValue = "10") int count,
+                             @RequestParam(required = false) Integer genreId,
+                             @RequestParam(required = false) Integer year) {
         return filmService.getTop(count, genreId, year);
     }
 
