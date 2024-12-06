@@ -134,7 +134,7 @@ public class FilmService {
      *
      * @param userId - long
      * @param friendId - long
-     * @return list of common films
+     * @return {@link List}
      */
     public List<Film> getCommonFilms(long userId, long friendId) {
         List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
