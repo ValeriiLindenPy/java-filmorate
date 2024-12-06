@@ -156,6 +156,19 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    public void testGetTopYearAndGenre() {
+        List<Film> topFilmsByYearAndGenre = filmStorage.getTopYearAndGenre(1, 6, 1999);
+
+        assertThat(topFilmsByYearAndGenre)
+                .isNotNull()
+                .hasSize(1);
+
+        Film topFilm = topFilmsByYearAndGenre.iterator().next();
+        assertThat(topFilm.getId()).isEqualTo(1L);
+        assertThat(topFilm.getReleaseDate().getYear()).isEqualTo(1999);
+    }
+
+    @Test
     public void searchByParam() {
         List<Film> films = filmStorage.searchByParam("matrix", FilmsSearchBy.TITLE);
         assertThat(films).hasSize(1);

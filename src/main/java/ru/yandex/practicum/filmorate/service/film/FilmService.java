@@ -71,8 +71,6 @@ public class FilmService {
         filmStorage.create(film);
         mpaStorage.saveMPA(film);
         genreStorage.saveGenres(film);
-        //add film directors
-        directorStorage.saveDirectors(film);
         return film;
     }
 
@@ -104,12 +102,25 @@ public class FilmService {
     /**
      * Retrieves the top-rated films.
      *
-     * @param count - int
+     * @param count   - int
+     * @param genreId - Integer (nullable)
+     * @param year    - Integer (nullable)
      * @return {@link List<Film>}
      */
-    public List<Film> getTop(int count) {
-        List<Film> films = filmStorage.getTop(count);
-        setAdditionalFieldsForFilms(films);
+    public List<Film> getTop(int count, Integer genreId, Integer year) {
+        List<Film> films;
+
+        if (genreId != null && year != null) {
+            films = filmStorage.getTopYearAndGenre(count, genreId, year);
+        } else if (genreId != null) {
+            films = filmStorage.getTopByGenre(count, genreId);
+        } else if (year != null) {
+            films = filmStorage.getTopByYear(count, year);
+        } else {
+            films = filmStorage.getTop(count);
+        }
+
+        setGenresForFilms(films);
         return films;
     }
 
@@ -127,7 +138,7 @@ public class FilmService {
     }
 
     /**
-     * Set genres for films.
+     * Set genres for a film.
      * @param films
      */
     private void setGenresForFilms(List<Film> films) {

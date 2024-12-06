@@ -20,7 +20,6 @@ public class FilmController {
     private final FilmService filmService;
     private final LikeService likeService;
 
-
     @GetMapping
     public List<Film> getAll() {
         return filmService.getAll();
@@ -31,10 +30,11 @@ public class FilmController {
         return filmService.getById(id);
     }
 
-
     @GetMapping("/popular")
-    public List<Film> getTop(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getTop(count);
+    public List<Film> getTop(@RequestParam(defaultValue = "10") int count,
+                             @RequestParam(required = false) Integer genreId,
+                             @RequestParam(required = false) Integer year) {
+        return filmService.getTop(count, genreId, year);
     }
 
     @GetMapping("/director/{directorId}")
@@ -60,6 +60,7 @@ public class FilmController {
     public void removeLike(@PathVariable long id, @PathVariable long userId) {
         likeService.removeLike(id, userId);
     }
+
 
     @PutMapping
     public Film update(@Validated(ValidationMarker.OnUpdate.class) @Valid @RequestBody Film newFilm) {

@@ -55,7 +55,19 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getTop(int count) {
-        return List.of();
+        return films.values().stream()
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
+
+    @Override
+    public List<Film> getTopByYear(int count, int year) {
+        return films.values().stream()
+                .filter(film -> film.getReleaseDate().getYear() == year)
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
     }
 
     @Override
@@ -75,6 +87,24 @@ public class InMemoryFilmStorage implements FilmStorage {
         return List.of();
     }
 
+    @Override
+    public List<Film> getTopByGenre(int count, int genreId) {
+        return films.values().stream()
+                .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
+
+    @Override
+    public List<Film> getTopYearAndGenre(int count, int genreId, int year) {
+        return films.values().stream()
+                .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
+                .filter(film -> film.getReleaseDate().getYear() == year)
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
 
     public void addLike(Long userId, Long filmId) {
         getById(filmId)
