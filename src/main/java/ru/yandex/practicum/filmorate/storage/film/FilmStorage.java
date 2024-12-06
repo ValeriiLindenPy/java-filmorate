@@ -31,11 +31,15 @@ public interface FilmStorage {
      */
     void deleteById(Long id);
 
-
     List<Film> getTop(int count);
+
+    List<Film> getTopByYear(int count, int year);
 
     List<Film> getDirectorFilmSortedByLike(Long directorId);
 
     List<Film> getDirectorFilmSortedByYear(Long directorId);
 
+    List<Film> getTopByGenre(int count, int genreId);
+
+    List<Film> getTopYearAndGenre(int count, int genreId, int year);
 }
