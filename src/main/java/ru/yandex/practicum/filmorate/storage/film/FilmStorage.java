@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +40,8 @@ public interface FilmStorage {
     List<Film> getDirectorFilmSortedByLike(Long directorId);
 
     List<Film> getDirectorFilmSortedByYear(Long directorId);
+
+    List<Film> searchByParam(String query, FilmsSearchBy param);
 
     List<Film> getTopByGenre(int count, int genreId);
 

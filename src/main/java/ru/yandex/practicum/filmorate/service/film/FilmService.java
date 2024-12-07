@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
@@ -70,6 +71,7 @@ public class FilmService {
         filmStorage.create(film);
         mpaStorage.saveMPA(film);
         genreStorage.saveGenres(film);
+        directorStorage.saveDirectors(film);
         return film;
     }
 
@@ -257,6 +259,17 @@ public class FilmService {
         validateFilmDirector(film);
     }
 
+
+    public List<Film> search(String query, String searchBy) {
+        if (query == null || (FilmsSearchBy.from(searchBy) == null)) {
+            log.warn("Invalid search by parameter");
+            throw new ValidationException("Invalid search by parameter");
+        }
+        List<Film> films = (filmStorage.searchByParam(query, FilmsSearchBy.from(searchBy)));
+        setAdditionalFieldsForFilms(films);
+        return films;
+    }
+
     /**
      * Deletes a film and all related data by film ID.
      *
@@ -273,5 +286,4 @@ public class FilmService {
         filmStorage.deleteById(filmId);
         log.info("Successfully deleted film with ID {}", filmId);
     }
-
 }
