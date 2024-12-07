@@ -4,20 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmService filmService;
 
     /**
      * Retrieves all users.
@@ -224,5 +225,77 @@ public class UserService {
     public Optional<User> getUserById(long userId) {
         log.debug("Attempting to retrieve user with ID {}", userId);
         return userStorage.getById(userId);
+    }
+
+    /**
+     * Returns a list of recommended movies to watch.
+     *
+     * @param userId ID of the user
+     * @return list of films
+     * @throws NotFoundException if the user does not exist
+     */
+    public List<Film> getRecommendations(long userId) {
+        if (userStorage.getById(userId).isEmpty()) {
+            throw new NotFoundException("User with ID " + userId + " not found");
+        }
+
+        /*
+        Getting a table in the following format:
+
+        {
+            'id1': [filmId1, filmId3],
+            'id2': [filmId2, filmId3],
+            'id3': [filmId1]
+        }
+         */
+
+        final Map<Long, Set<Long>> likes = new HashMap<>();
+
+        // Filling the table with favorite movies
+        List<Film> movies = filmService.getAll();
+        for (Film film : movies) {
+            for (Long id : film.getLikes()) {
+                if (!likes.containsKey(id)) {
+                    likes.put(id, new HashSet<>());
+                }
+
+                likes.get(id).add(film.getId());
+            }
+        }
+
+        if (!likes.containsKey(userId)) {
+            return new ArrayList<>();
+        }
+
+        // Finding the greatest match
+        Long freqUserId = null;
+        int freq  = 0;
+        for (Long ids : likes.keySet()) {
+            if (ids.equals(userId)) {
+                continue;
+            }
+
+            int countFreq = 0;
+            for (Long filmId : likes.get(userId)) {
+                if (likes.get(ids).contains(filmId)) {
+                    countFreq += 1;
+                }
+            }
+
+            if (countFreq > freq) {
+                freqUserId = ids;
+                freq = countFreq;
+            }
+        }
+
+        if (freqUserId == null) {
+            return new ArrayList<>();
+        }
+
+        // Creating a list of recommended movies
+        final Long userWithGreatestMatch = freqUserId;
+        return movies.stream()
+                .filter(film -> likes.get(userWithGreatestMatch).contains(film.getId()) && !likes.get(userId).contains(film.getId()))
+                .toList();
     }
 }
