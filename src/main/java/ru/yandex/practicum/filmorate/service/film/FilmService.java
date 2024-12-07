@@ -71,6 +71,7 @@ public class FilmService {
         filmStorage.create(film);
         mpaStorage.saveMPA(film);
         genreStorage.saveGenres(film);
+        directorStorage.saveDirectors(film);
         return film;
     }
 
