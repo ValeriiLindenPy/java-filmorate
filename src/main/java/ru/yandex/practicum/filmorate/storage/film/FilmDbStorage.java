@@ -17,14 +17,14 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRowMapper mapper;
     private final JdbcTemplate jdbc;
     private static final String BASE_FILM_QUERY = """
-        SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
-        FROM FILMS f
-        JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
-              FROM FILM_LIKES fl
-              GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
-        LEFT JOIN FILM_GENRES fg ON f.ID = fg.film_id
-        LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID
-    """;
+                SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
+                FROM FILMS f
+                JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
+                      FROM FILM_LIKES fl
+                      GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
+                LEFT JOIN FILM_GENRES fg ON f.ID = fg.film_id
+                LEFT JOIN MPA_RATINGS mr ON f.MPA_ID = mr.ID
+            """;
 
     @Override
     public Optional<Film> getById(Long id) {
@@ -87,41 +87,42 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getTop(int count) {
         String query = BASE_FILM_QUERY + """
-            ORDER BY likes_count.likes DESC
-            LIMIT ?;
-        """;
+                    ORDER BY likes_count.likes DESC
+                    LIMIT ?;
+                """;
         return jdbc.query(query, mapper, count);
     }
 
     @Override
     public List<Film> getTopByYear(int count, int year) {
         String query = BASE_FILM_QUERY + """
-            WHERE EXTRACT(YEAR FROM f.release_date) = ?
-            ORDER BY likes_count.likes DESC
-            LIMIT ?;
-        """;
+                    WHERE EXTRACT(YEAR FROM f.release_date) = ?
+                    ORDER BY likes_count.likes DESC
+                    LIMIT ?;
+                """;
         return jdbc.query(query, mapper, year, count);
     }
 
     @Override
     public List<Film> getTopByGenre(int count, int genreId) {
         String query = BASE_FILM_QUERY + """
-            WHERE fg.genre_id = ?
-            ORDER BY likes_count.likes DESC
-            LIMIT ?;
-        """;
+                    WHERE fg.genre_id = ?
+                    ORDER BY likes_count.likes DESC
+                    LIMIT ?;
+                """;
         return jdbc.query(query, mapper, genreId, count);
     }
 
     @Override
     public List<Film> getTopYearAndGenre(int count, int genreId, int year) {
         String query = BASE_FILM_QUERY + """
-            WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ?
-            ORDER BY likes_count.likes DESC
-            LIMIT ?;
-        """;
+                    WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ?
+                    ORDER BY likes_count.likes DESC
+                    LIMIT ?;
+                """;
         return jdbc.query(query, mapper, genreId, year, count);
     }
+
     public List<Film> getDirectorFilmSortedByLike(Long directorId) {
         String getDirectorFilmSortedByLikeQuery = "SELECT f.*, fl.likes_count, mr.id AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM films f\n" +

@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -26,6 +27,7 @@ public class FilmService {
     private final MPAStorage mpaStorage;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
+    private final LikeStorage likeStorage;
     private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
 
     /**
@@ -160,9 +162,16 @@ public class FilmService {
         }
     }
 
+    private void setLikesForFilms(List<Film> films) {
+        for (Film film : films) {
+            film.setLikes(likeStorage.getFilmLikes(film.getId()));
+        }
+    }
+
     private void setAdditionalFieldsForFilms(List<Film> films) {
         setGenresForFilms(films);
         setDirectorsForFilms(films);
+        setLikesForFilms(films);
     }
 
 
