@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.model.OperationType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.time.ZoneOffset;
-
 @Component
 public class EventRowMapper implements RowMapper<Event> {
     @Override
