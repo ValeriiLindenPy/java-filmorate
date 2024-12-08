@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final EventService eventService;
 
     @GetMapping
     public List<User> getAll() {
@@ -68,5 +71,10 @@ public class UserController {
     public User getUser(@PathVariable long id) {
         return userService.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @GetMapping("{userId}/feed")
+    public List<Event> getUserFeed(@PathVariable Long userId) {
+        return eventService.getEventsByUserId(userId);
     }
 }

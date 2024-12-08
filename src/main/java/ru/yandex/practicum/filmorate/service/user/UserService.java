@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.OperationType;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final EventService eventService;
+
 
     /**
      * Retrieves all users.
@@ -95,6 +100,12 @@ public class UserService {
         try {
             userStorage.addFriendship(userId, friendId);
             log.info("Friendship successfully added: {} -> {}", userId, friendId);
+            eventService.createEvent(
+                    userId,
+                    EventType.FRIEND,
+                    OperationType.ADD,
+                    friendId
+            );
         } catch (DataAccessException e) {
             log.error("Failed to add friendship.", e);
             throw new ValidationException("Failed to add friendship: " + e.getMessage());
@@ -125,6 +136,12 @@ public class UserService {
         try {
             userStorage.removeFriend(userId, friendId);
             log.info("Friendship successfully removed: {} -> {}", userId, friendId);
+            eventService.createEvent(
+                    userId,
+                    EventType.FRIEND,
+                    OperationType.REMOVE,
+                    friendId
+            );
             return Map.of("friends", "You removed %s from friends".formatted(friend.get().getName()));
         } catch (DataAccessException e) {
             log.error("Failed to remove friendship.", e);

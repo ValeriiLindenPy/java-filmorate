@@ -114,3 +114,17 @@ VALUES
 (1, 1, true),  -- like user 1
 (1, 2, true),  -- like user 2
 (2, 3, false); -- dislike user 1
+
+-- add event
+INSERT INTO event_types (event_type, name)
+VALUES
+ (1, 'LIKE'),
+ (2, 'REVIEW'),
+ (3, 'FRIEND');
+
+-- add actions
+INSERT INTO operations (operation, name)
+VALUES
+(1, 'ADD'),
+(2, 'REMOVE'),
+(3, 'UPDATE');
