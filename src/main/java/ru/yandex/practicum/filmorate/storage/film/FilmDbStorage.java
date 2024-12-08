@@ -122,6 +122,7 @@ public class FilmDbStorage implements FilmStorage {
         """;
         return jdbc.query(query, mapper, genreId, year, count);
     }
+
     public List<Film> getDirectorFilmSortedByLike(Long directorId) {
         String getDirectorFilmSortedByLikeQuery = "SELECT f.*, fl.likes_count, mr.id AS mpa_id, mr.name AS mpa_name\n" +
                 "FROM films f\n" +
@@ -141,7 +142,6 @@ public class FilmDbStorage implements FilmStorage {
         return jdbc.query(getDirectorFilmSortedByLikeQuery, mapper, directorId);
     }
 
-
     public List<Film> getDirectorFilmSortedByYear(Long directorId) {
         String getDirectorFilmSortedByYearQuery = "SELECT f.*,\n" +
                 "EXTRACT(YEAR FROM CAST(f.RELEASE_DATE AS DATE)) AS release_year,\n" +
@@ -157,5 +157,4 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbc.query(getDirectorFilmSortedByYearQuery, mapper, directorId);
     }
-
 }
