@@ -20,6 +20,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
 import java.time.LocalDate;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -139,6 +140,17 @@ public class FilmDbStorageTest {
         Film topFilm = topFilms.iterator().next();
 
         assertThat(topFilm.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    public void testGetCommonFilms() {
+        List<Film> commonFilms = filmStorage.getCommonFilms(1L, 2L);
+
+        assertThat(commonFilms).hasSize(1);
+
+        Film commonFilm = commonFilms.getFirst();
+        assertThat(commonFilm.getName()).isEqualTo("Inception");
+        assertThat(commonFilm.getId()).isEqualTo(2L);
     }
 
     @Test
