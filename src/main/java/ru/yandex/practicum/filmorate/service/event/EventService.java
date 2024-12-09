@@ -33,23 +33,23 @@ public class EventService {
         log.info("Event successfully added: {}", id);
     }
 
-        /**
-         * Retrieves a list of events for a specific user.
-         *
-         * @param userId the ID of the user.
-         * @return a list of events associated with the user.
-         */
-        public List<Event> getEventsByUserId(Long userId) {
-            log.trace("Checking existence of user with ID {}", userId);
+    /**
+     * Retrieves a list of events for a specific user.
+     *
+     * @param userId the ID of the user.
+     * @return a list of events associated with the user.
+     */
+    public List<Event> getEventsByUserId(Long userId) {
+        log.trace("Checking existence of user with ID {}", userId);
 
-            // Проверка, существует ли пользователь с заданным userId
-            if (userStorage.getById(userId).isEmpty()) {
-                log.warn("User with ID {} does not exist", userId);
-                return Collections.emptyList();  // Возвращаем пустой список, если пользователь не найден
-            }
-            log.trace("Retrieves a list of events for a user {}", userId);
-            return eventStorage.getEventsByUserId(userId);
+        // Проверка, существует ли пользователь с заданным userId
+        if (userStorage.getById(userId).isEmpty()) {
+            log.warn("User with ID {} does not exist", userId);
+            return Collections.emptyList();  // Возвращаем пустой список, если пользователь не найден
         }
+        log.trace("Retrieves a list of events for a user {}", userId);
+        return eventStorage.getEventsByUserId(userId);
+    }
 
     /**
      * Utility method to create and save an event.
@@ -82,5 +82,4 @@ public class EventService {
                 .orElse(0);
         return ++currentId;
     }
-
 }
