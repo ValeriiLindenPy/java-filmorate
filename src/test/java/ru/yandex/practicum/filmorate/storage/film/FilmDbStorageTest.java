@@ -151,7 +151,9 @@ public class FilmDbStorageTest {
         Film commonFilm = commonFilms.get(0);
         assertThat(commonFilm.getName()).isEqualTo("The Matrix");
         assertThat(commonFilm.getId()).isEqualTo(1L);
+    }
 
+    @Test
     public void testDirectorFilmsByLikes() {
         List<Film> directorFilms = filmStorage.getDirectorFilmSortedByLike(1L);
         assertThat(directorFilms).hasSize(2);
