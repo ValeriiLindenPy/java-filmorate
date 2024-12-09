@@ -22,6 +22,5 @@ import jakarta.validation.constraints.NotNull;
         @NotNull(message = "OperationType не может быть null.")
         private OperationType operation;
         private Long eventId;
-        @NotNull(message = "EntityId не может быть null.")
         private Long entityId;
     }
