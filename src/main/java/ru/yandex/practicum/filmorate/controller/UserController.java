@@ -74,12 +74,11 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-
     @GetMapping("{userId}/feed")
     public List<Event> getUserFeed(@PathVariable Long userId) {
         return eventService.getEventsByUserId(userId);
     }
-  
+
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable long id) {
         return userService.getRecommendations(id);
