@@ -9,9 +9,12 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.dto.RequestUpdateReviewDto;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.service.review.ReviewService;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.UserRowMapper;
@@ -23,7 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({ReviewService.class, ReviewMapper.class, ReviewStorage.class, UserDbStorage.class, FilmDbStorage.class, UserRowMapper.class, FilmRowMapper.class})
+@Import({ReviewService.class, ReviewMapper.class, ReviewStorage.class, UserDbStorage.class,
+        FilmDbStorage.class, UserRowMapper.class,
+        FilmRowMapper.class, EventService.class, EventStorage.class,
+        EventRowMapper.class})
 @AutoConfigureTestDatabase
 class ReviewServiceTest {
     private final ReviewService reviewService;
