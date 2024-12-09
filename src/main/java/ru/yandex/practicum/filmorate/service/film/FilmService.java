@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -140,6 +139,7 @@ public class FilmService {
 
     /**
      * Set genres for a film.
+     *
      * @param films
      */
     private void setGenresForFilms(List<Film> films) {
@@ -152,6 +152,7 @@ public class FilmService {
 
     /**
      * Set directors for films.
+     *
      * @param films
      */
     private void setDirectorsForFilms(List<Film> films) {
@@ -163,8 +164,9 @@ public class FilmService {
     }
 
     private void setLikesForFilms(List<Film> films) {
+        Map<Long, Set<Long>> filmsLikes = likeStorage.getAllFilmLikes();
         for (Film film : films) {
-            film.setLikes(likeStorage.getFilmLikes(film.getId()));
+            film.setLikes(filmsLikes.getOrDefault(film.getId(), new HashSet<>()));
         }
     }
 
@@ -190,6 +192,7 @@ public class FilmService {
 
     /**
      * Validate Genres
+     *
      * @param film
      */
     private void validateFilmGenres(Film film) {
@@ -211,6 +214,7 @@ public class FilmService {
 
     /**
      * Validate Directors
+     *
      * @param film
      */
     private void validateFilmDirector(Film film) {
@@ -232,6 +236,7 @@ public class FilmService {
 
     /**
      * Validate MPA
+     *
      * @param film
      */
     private void validateFilmMPA(Film film) {
@@ -243,6 +248,7 @@ public class FilmService {
 
     /**
      * Validate Release Date
+     *
      * @param film
      */
     private static void validateReleaseDate(Film film) {
@@ -256,6 +262,7 @@ public class FilmService {
 
     /**
      * Validate a film
+     *
      * @param film
      */
     private void validateFilm(Film film) {

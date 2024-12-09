@@ -267,18 +267,18 @@ public class UserService {
         Long mostSimilarUserId = null;
         int maxOverlap = 0;
 
-        for (Long ids : usersLikes.keySet()) {
+        for (Long id : usersLikes.keySet()) {
             // Do not compare with itself.
-            if (ids.equals(userId)) {
+            if (id.equals(userId)) {
                 continue;
             }
 
             Set<Long> intersection = new HashSet<>(usersLikes.get(userId));
-            intersection.retainAll(usersLikes.get(ids));
+            intersection.retainAll(usersLikes.get(id));
             int overlap = intersection.size();
 
             if (overlap > maxOverlap) {
-                mostSimilarUserId = ids;
+                mostSimilarUserId = id;
                 maxOverlap = overlap;
             }
         }
