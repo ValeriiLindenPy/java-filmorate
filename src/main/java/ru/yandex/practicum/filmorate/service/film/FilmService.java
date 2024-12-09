@@ -2,15 +2,16 @@ package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -26,6 +27,7 @@ public class FilmService {
     private final MPAStorage mpaStorage;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
+    private final LikeStorage likeStorage;
     private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
 
     /**
@@ -70,6 +72,7 @@ public class FilmService {
         filmStorage.create(film);
         mpaStorage.saveMPA(film);
         genreStorage.saveGenres(film);
+        directorStorage.saveDirectors(film);
         return film;
     }
 
@@ -137,7 +140,22 @@ public class FilmService {
     }
 
     /**
+     * Get common films between the user and their friend, sorted by popularity
+     *
+     * @param userId - long
+     * @param friendId - long
+     * @return {@link List}
+     */
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+        setGenresForFilms(commonFilms);
+
+        return commonFilms;
+    }
+
+    /**
      * Set genres for a film.
+     *
      * @param films
      */
     private void setGenresForFilms(List<Film> films) {
@@ -150,6 +168,7 @@ public class FilmService {
 
     /**
      * Set directors for films.
+     *
      * @param films
      */
     private void setDirectorsForFilms(List<Film> films) {
@@ -160,9 +179,17 @@ public class FilmService {
         }
     }
 
+    private void setLikesForFilms(List<Film> films) {
+        Map<Long, Set<Long>> filmsLikes = likeStorage.getAllFilmLikes();
+        for (Film film : films) {
+            film.setLikes(filmsLikes.getOrDefault(film.getId(), new HashSet<>()));
+        }
+    }
+
     private void setAdditionalFieldsForFilms(List<Film> films) {
         setGenresForFilms(films);
         setDirectorsForFilms(films);
+        setLikesForFilms(films);
     }
 
 
@@ -181,6 +208,7 @@ public class FilmService {
 
     /**
      * Validate Genres
+     *
      * @param film
      */
     private void validateFilmGenres(Film film) {
@@ -202,6 +230,7 @@ public class FilmService {
 
     /**
      * Validate Directors
+     *
      * @param film
      */
     private void validateFilmDirector(Film film) {
@@ -223,6 +252,7 @@ public class FilmService {
 
     /**
      * Validate MPA
+     *
      * @param film
      */
     private void validateFilmMPA(Film film) {
@@ -234,6 +264,7 @@ public class FilmService {
 
     /**
      * Validate Release Date
+     *
      * @param film
      */
     private static void validateReleaseDate(Film film) {
@@ -247,6 +278,7 @@ public class FilmService {
 
     /**
      * Validate a film
+     *
      * @param film
      */
     private void validateFilm(Film film) {
@@ -255,6 +287,17 @@ public class FilmService {
         validateFilmMPA(film);
         validateFilmGenres(film);
         validateFilmDirector(film);
+    }
+
+
+    public List<Film> search(String query, String searchBy) {
+        if (query == null || (FilmsSearchBy.from(searchBy) == null)) {
+            log.warn("Invalid search by parameter");
+            throw new ValidationException("Invalid search by parameter");
+        }
+        List<Film> films = (filmStorage.searchByParam(query, FilmsSearchBy.from(searchBy)));
+        setAdditionalFieldsForFilms(films);
+        return films;
     }
 
     /**
@@ -273,5 +316,4 @@ public class FilmService {
         filmStorage.deleteById(filmId);
         log.info("Successfully deleted film with ID {}", filmId);
     }
-
 }

@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -82,6 +84,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> searchByParam(String query, FilmsSearchBy param) {
+        return List.of();
+    }
+
+    @Override
     public List<Film> getTopByGenre(int count, int genreId) {
         return films.values().stream()
                 .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
@@ -115,4 +122,11 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .remove(userId);
     }
 
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return films.values().stream()
+                .filter(film -> film.getLikes().contains(userId) && film.getLikes().contains(friendId))
+                .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
+                .collect(Collectors.toList());
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
@@ -19,6 +20,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
 import java.time.LocalDate;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -141,6 +143,17 @@ public class FilmDbStorageTest {
     }
 
     @Test
+    public void testGetCommonFilms() {
+        List<Film> commonFilms = filmStorage.getCommonFilms(1L, 2L);
+
+        assertThat(commonFilms).hasSize(1);
+
+        Film commonFilm = commonFilms.getFirst();
+        assertThat(commonFilm.getName()).isEqualTo("Inception");
+        assertThat(commonFilm.getId()).isEqualTo(2L);
+    }
+
+    @Test
     public void testDirectorFilmsByLikes() {
         List<Film> directorFilms = filmStorage.getDirectorFilmSortedByLike(1L);
         assertThat(directorFilms).hasSize(2);
@@ -165,5 +178,21 @@ public class FilmDbStorageTest {
         Film topFilm = topFilmsByYearAndGenre.iterator().next();
         assertThat(topFilm.getId()).isEqualTo(1L);
         assertThat(topFilm.getReleaseDate().getYear()).isEqualTo(1999);
+    }
+
+    @Test
+    public void searchByParam() {
+        List<Film> films = filmStorage.searchByParam("matrix", FilmsSearchBy.TITLE);
+        assertThat(films).hasSize(1);
+        assertThat(films).first().isEqualTo(filmStorage.getById(1L).get());
+
+        films = filmStorage.searchByParam("ron", FilmsSearchBy.DIRECTOR);
+        assertThat(films).hasSize(1);
+        assertThat(films).first().isEqualTo(filmStorage.getById(1L).get());
+
+        films = filmStorage.searchByParam("on", FilmsSearchBy.ALL);
+        assertThat(films).hasSize(2);
+        assertThat(films).first().isEqualTo(filmStorage.getById(2L).get());
+        assertThat(films).last().isEqualTo(filmStorage.getById(1L).get());
     }
 }

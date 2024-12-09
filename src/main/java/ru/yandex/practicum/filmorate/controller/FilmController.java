@@ -2,18 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.service.like.LikeService;
+
 import java.util.List;
 
 @RestController
-@Slf4j
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
@@ -45,6 +44,11 @@ public class FilmController {
         return filmService.getFilmsByDirectorSorted(directorId, sortBy);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film create(@Validated(ValidationMarker.OnCreate.class) @Valid @RequestBody Film film) {
@@ -67,9 +71,14 @@ public class FilmController {
         return filmService.update(newFilm);
     }
 
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        return filmService.search(query, by);
+    }
+
     @DeleteMapping("/{filmId}")
     public void removeFilm(@PathVariable long filmId) {
         filmService.deleteById(filmId);
     }
-
 }
