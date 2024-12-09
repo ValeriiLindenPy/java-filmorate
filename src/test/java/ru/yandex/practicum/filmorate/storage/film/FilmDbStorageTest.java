@@ -148,9 +148,9 @@ public class FilmDbStorageTest {
 
         assertThat(commonFilms).hasSize(1);
 
-        Film commonFilm = commonFilms.get(0);
-        assertThat(commonFilm.getName()).isEqualTo("The Matrix");
-        assertThat(commonFilm.getId()).isEqualTo(1L);
+        Film commonFilm = commonFilms.getFirst();
+        assertThat(commonFilm.getName()).isEqualTo("Inception");
+        assertThat(commonFilm.getId()).isEqualTo(2L);
     }
 
     @Test
