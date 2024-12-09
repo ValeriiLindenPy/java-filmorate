@@ -4,20 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmService filmService;
 
     /**
      * Retrieves all users.
@@ -224,5 +225,72 @@ public class UserService {
     public Optional<User> getUserById(long userId) {
         log.debug("Attempting to retrieve user with ID {}", userId);
         return userStorage.getById(userId);
+    }
+
+    /**
+     * Returns a list of recommended movies to watch.
+     *
+     * @param userId ID of the user
+     * @return list of films
+     * @throws NotFoundException if the user does not exist
+     */
+    public List<Film> getRecommendations(long userId) {
+        if (userStorage.getById(userId).isEmpty()) {
+            throw new NotFoundException("User with ID " + userId + " not found");
+        }
+
+        /*
+        Getting a table in the following format:
+
+        {
+            'userId1': [filmId1, filmId3],
+            'userId2': [filmId2, filmId3],
+            'userId3': [filmId1]
+        }
+         */
+
+        Map<Long, Set<Long>> usersLikes = new HashMap<>();
+
+        // Builds a map of user IDs to their liked film IDs.
+        List<Film> movies = filmService.getAll();
+        for (Film film : movies) {
+            for (Long id : film.getLikes()) {
+                usersLikes.computeIfAbsent(id, k -> new HashSet<>()).add(film.getId());
+            }
+        }
+
+        if (!usersLikes.containsKey(userId)) {
+            return Collections.emptyList();
+        }
+
+        // Finds the user whose liked films most closely match the given user's liked films.
+        Long mostSimilarUserId = null;
+        int maxOverlap = 0;
+
+        for (Long id : usersLikes.keySet()) {
+            // Do not compare with itself.
+            if (id.equals(userId)) {
+                continue;
+            }
+
+            Set<Long> intersection = new HashSet<>(usersLikes.get(userId));
+            intersection.retainAll(usersLikes.get(id));
+            int overlap = intersection.size();
+
+            if (overlap > maxOverlap) {
+                mostSimilarUserId = id;
+                maxOverlap = overlap;
+            }
+        }
+
+        if (mostSimilarUserId == null) {
+            return Collections.emptyList();
+        }
+
+        // Creating a list of recommended movies
+        final Long userWithGreatestMatch = mostSimilarUserId;
+        return movies.stream()
+                .filter(film -> usersLikes.get(userWithGreatestMatch).contains(film.getId()) && !usersLikes.get(userId).contains(film.getId()))
+                .toList();
     }
 }
