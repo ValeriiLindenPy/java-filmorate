@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,8 +25,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getAll() {
-        return films.values();
+    public List<Film> getAll() {
+        return films.values().stream().toList();
     }
 
     @Override
@@ -54,10 +55,57 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getTop(int count) {
+    public List<Film> getTop(int count) {
+        return films.values().stream()
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
+
+    @Override
+    public List<Film> getTopByYear(int count, int year) {
+        return films.values().stream()
+                .filter(film -> film.getReleaseDate().getYear() == year)
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
+
+    @Override
+    public List<Film> getDirectorFilmSortedByLike(Long directorId) {
+        //TODO method for local storage sort by like
         return List.of();
     }
 
+    @Override
+    public List<Film> getDirectorFilmSortedByYear(Long directorId) {
+        //TODO method for local storage sort by year
+        return List.of();
+    }
+
+    @Override
+    public List<Film> searchByParam(String query, FilmsSearchBy param) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> getTopByGenre(int count, int genreId) {
+        return films.values().stream()
+                .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
+
+    @Override
+    public List<Film> getTopYearAndGenre(int count, int genreId, int year) {
+        return films.values().stream()
+                .filter(film -> film.getGenres().stream().anyMatch(genre -> genre.getId() == genreId))
+                .filter(film -> film.getReleaseDate().getYear() == year)
+                .sorted(Comparator.comparingInt(f -> -f.getLikes().size()))
+                .limit(count)
+                .toList();
+    }
 
     public void addLike(Long userId, Long filmId) {
         getById(filmId)

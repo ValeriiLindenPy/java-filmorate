@@ -25,6 +25,12 @@ CREATE TABLE IF NOT EXISTS genres (
     name VARCHAR(50) NOT NULL
 );
 
+-- Director Table
+CREATE TABLE IF NOT EXISTS directors (
+    id BIGINT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
 -- MPA ratings Table
 CREATE TABLE IF NOT EXISTS mpa_ratings (
     id BIGINT PRIMARY KEY,
@@ -51,6 +57,15 @@ CREATE TABLE IF NOT EXISTS film_genres (
     CONSTRAINT unique_film_genre UNIQUE (film_id, genre_id)
 );
 
+-- Films genres Table
+CREATE TABLE IF NOT EXISTS film_directors (
+    film_id BIGINT NOT NULL,
+    director_id BIGINT NOT NULL,
+    CONSTRAINT fk_film_directors FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
+    CONSTRAINT fk_director FOREIGN KEY (director_id) REFERENCES directors (id) ON DELETE CASCADE,
+    CONSTRAINT unique_film_director UNIQUE (film_id, director_id)
+);
+
 
 -- Films genres Table
 CREATE TABLE IF NOT EXISTS film_mpa (
@@ -67,4 +82,25 @@ CREATE TABLE IF NOT EXISTS film_likes (
     CONSTRAINT fk_film_likes FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
     CONSTRAINT fk_user_likes FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT unique_film_user UNIQUE (film_id, user_id)
+);
+
+-- Reviews table
+CREATE TABLE  IF NOT EXISTS reviews (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    content VARCHAR(1000) NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    user_id BIGINT NOT NULL,
+    film_id BIGINT NOT NULL,
+    CONSTRAINT fk_film_reviews FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_reviews FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+-- Review useful rating
+CREATE TABLE  IF NOT EXISTS review_ratings (
+    review_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    is_like BOOLEAN NOT NULL,
+    CONSTRAINT fk_review FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE,
+    CONSTRAINT fk_user_review_ratings FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT unique_review__ratings_user UNIQUE (review_id, user_id)
 );
