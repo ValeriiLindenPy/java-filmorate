@@ -97,7 +97,7 @@ class ReviewServiceTest {
 
     @Test
     void shouldFindById() {
-        Review review = new Review(null, "Find me", true, 1L, 2L, 0L);
+        Review review = new Review(3L, "Find me", true, 1L, 2L, 0L);
         Review created = reviewService.createReview(review);
 
         Review found = reviewService.findById(created.getReviewId());
@@ -106,8 +106,8 @@ class ReviewServiceTest {
 
     @Test
     void shouldReturnAllReviews() {
-        reviewService.createReview(new Review(null, "Review 1", true, 1L, 2L, 0L));
-        reviewService.createReview(new Review(null, "Review 2", true, 1L, 2L, 0L));
+        reviewService.createReview(new Review(4L, "Review 1", true, 1L, 2L, 0L));
+        reviewService.createReview(new Review(5L, "Review 2", true, 1L, 2L, 0L));
 
         List<Review> reviews = reviewService.findTop(null, 10);
         assertEquals(4, reviews.size());

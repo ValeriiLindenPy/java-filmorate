@@ -37,6 +37,11 @@ public interface FilmStorage {
 
     List<Film> getTopByYear(int count, int year);
 
+    /**
+     * Get common films between the user and their friend, sorted by popularity
+     */
+    List<Film> getCommonFilms(long userId, long friendId);
+
     List<Film> getDirectorFilmSortedByLike(Long directorId);
 
     List<Film> getDirectorFilmSortedByYear(Long directorId);

@@ -1,14 +1,14 @@
 --
----- Clear existing data
---DELETE FROM film_mpa;
---DELETE FROM film_genres;
---DELETE FROM films;
---DELETE FROM genres;
---DELETE FROM directors;
---DELETE FROM mpa_ratings;
---DELETE FROM user_friendships;
---DELETE FROM users;
---DELETE FROM film_likes;
+-- Clear existing data
+DELETE FROM film_mpa;
+DELETE FROM film_genres;
+DELETE FROM films;
+DELETE FROM genres;
+DELETE FROM directors;
+DELETE FROM mpa_ratings;
+DELETE FROM user_friendships;
+DELETE FROM users;
+DELETE FROM film_likes;
 DELETE FROM reviews;
 DELETE FROM review_ratings;
 
@@ -25,6 +25,7 @@ MERGE INTO user_friendships (user1_id, user2_id)
 KEY(user1_id, user2_id)
 VALUES
   (1, 3),
+  (1, 2),
   (2, 3);
 
 -- Add MPA ratings
@@ -99,6 +100,7 @@ MERGE INTO film_likes (film_id, user_id)
 KEY(film_id, user_id)
 VALUES
   (1, 1),
+  (2, 1),
   (2, 2),
   (2, 3);
 

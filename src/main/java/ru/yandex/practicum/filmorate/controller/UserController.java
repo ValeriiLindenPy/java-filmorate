@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.service.event.EventService;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriend(@PathVariable long id,
-                                            @PathVariable long otherId) {
+                                      @PathVariable long otherId) {
         return userService.getCommonFriend(id, otherId);
     }
 
@@ -58,7 +59,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public Map<String,String> removeFriend(@PathVariable long id, @PathVariable long friendId) {
+    public Map<String, String> removeFriend(@PathVariable long id, @PathVariable long friendId) {
         return userService.removeFriend(id, friendId);
     }
 
@@ -73,8 +74,14 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
+
     @GetMapping("{userId}/feed")
     public List<Event> getUserFeed(@PathVariable Long userId) {
         return eventService.getEventsByUserId(userId);
+    }
+  
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable long id) {
+        return userService.getRecommendations(id);
     }
 }
