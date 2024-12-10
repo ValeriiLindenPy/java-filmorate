@@ -9,12 +9,10 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.service.like.LikeService;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.MPAStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.mapper.*;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
@@ -28,7 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({UserService.class, UserDbStorage.class, UserRowMapper.class, FilmService.class, FilmDbStorage.class,
         FilmRowMapper.class, LikeService.class, LikeStorage.class, MPAStorage.class, MPARowMapper.class,
-        GenreStorage.class, GenreRowMapper.class, DirectorStorage.class, DirectorRowMapper.class})
+        GenreStorage.class, GenreRowMapper.class, DirectorStorage.class, DirectorRowMapper.class,
+        EventService.class, EventStorage.class, EventRowMapper.class})
 @AutoConfigureTestDatabase
 class RecommendationsTest {
     private final UserService userService;
