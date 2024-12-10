@@ -5,8 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.dto.RequestUpdateReviewDto;
+import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -20,6 +23,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userService;
     private final FilmStorage filmService;
+    private final EventService eventService;
 
     /**
      * Create a review
@@ -41,6 +45,12 @@ public class ReviewService {
         // update fields in Review
         review.setReviewId(id);
         review.setUseful(0L);
+        eventService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                OperationType.ADD,
+                review.getReviewId()
+        );
 
         return review;
     }
@@ -84,8 +94,16 @@ public class ReviewService {
         if (reviewDto.getIsPositive() != null) {
             review.setIsPositive(reviewDto.getIsPositive());
         }
+        review = reviewStorage.updateReview(review);
 
-        return reviewStorage.updateReview(review);
+        eventService.createEvent(
+                review.getUserId(),
+                EventType.REVIEW,
+                OperationType.UPDATE,
+                review.getReviewId()
+        );
+
+        return review;
     }
 
     /**
@@ -94,6 +112,12 @@ public class ReviewService {
      * @param id
      */
     public void deleteById(Long id) {
+        eventService.createEvent(
+                reviewStorage.findById(id).get().getUserId(),
+                EventType.REVIEW,
+                OperationType.REMOVE,
+                id
+        );
         reviewStorage.deleteById(id);
     }
 
@@ -134,6 +158,12 @@ public class ReviewService {
      */
     public void addLike(Long reviewId, Long userId) {
         addLikeDislike(reviewId, userId, true);
+        eventService.createEvent(
+                userId,
+                EventType.LIKE,
+                OperationType.ADD,
+                reviewId
+        );
     }
 
     /**
@@ -176,6 +206,12 @@ public class ReviewService {
      */
     public void deleteLike(Long reviewId, Long userId) {
         deleteLikeDislike(reviewId, userId, true);
+        eventService.createEvent(
+                userId,
+                EventType.LIKE,
+                OperationType.REMOVE,
+                reviewId
+        );
     }
 
     /**

@@ -104,3 +104,14 @@ CREATE TABLE  IF NOT EXISTS review_ratings (
     CONSTRAINT fk_user_review_ratings FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT unique_review__ratings_user UNIQUE (review_id, user_id)
 );
+
+-- Events table
+CREATE TABLE IF NOT EXISTS events (
+    id BIGINT PRIMARY KEY,
+    timestamp BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    event_type VARCHAR(10) NOT NULL,
+    operation VARCHAR(20) NOT NULL,
+    entity_id BIGINT NOT NULL,
+    CONSTRAINT fk_user_events FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
