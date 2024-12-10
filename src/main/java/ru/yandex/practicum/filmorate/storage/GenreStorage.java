@@ -13,15 +13,13 @@ import java.util.*;
 @Repository
 @RequiredArgsConstructor
 public class GenreStorage {
-    private static final String FIND_ALL_GENRE_QUERY = "SELECT * FROM genres";
-    private static final String FIND_GENRE_BY_ID_QUERY = "SELECT * FROM genres WHERE id = ?";
-
     private final JdbcTemplate jdbc;
     private final GenreRowMapper mapper;
 
     public Optional<Genre> getById(Long id) {
         try {
-            Genre genre = jdbc.queryForObject(FIND_GENRE_BY_ID_QUERY, mapper, id);
+            String findGenreByIDQuery = "SELECT * FROM genres WHERE id = ?";
+            Genre genre = jdbc.queryForObject(findGenreByIDQuery, mapper, id);
             return Optional.of(genre);
         } catch (DataAccessException ignored) {
             return Optional.empty();
@@ -30,7 +28,8 @@ public class GenreStorage {
 
 
     public List<Genre> getAll() {
-        return jdbc.query(FIND_ALL_GENRE_QUERY, mapper);
+        String findAllGenreQuery = "SELECT * FROM genres";
+        return jdbc.query(findAllGenreQuery, mapper);
     }
 
     public void saveGenres(Film film) {
@@ -78,7 +77,6 @@ public class GenreStorage {
         Map<Long, Set<Genre>> filmGenres = new HashMap<>();
 
         jdbc.query(sql, rs -> {
-            while (rs.next()) {
                 Long filmId = rs.getLong("film_id");
                 Genre genre = Genre.builder()
                         .id(rs.getLong("genre_id"))
@@ -86,7 +84,6 @@ public class GenreStorage {
                         .build();
 
                 filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
-            }
         });
 
         return filmGenres;

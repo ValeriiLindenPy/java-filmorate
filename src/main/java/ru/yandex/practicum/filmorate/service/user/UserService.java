@@ -4,27 +4,32 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.service.event.EventService;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.OperationType;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final EventService eventService;
+    private final FilmService filmService;
 
     /**
      * Retrieves all users.
      *
-     * @return Collection<User>
+     * @return List<User>
      */
-    public Collection<User> getAll() {
+    public List<User> getAll() {
         return userStorage.getAll();
     }
 
@@ -95,6 +100,12 @@ public class UserService {
         try {
             userStorage.addFriendship(userId, friendId);
             log.info("Friendship successfully added: {} -> {}", userId, friendId);
+            eventService.createEvent(
+                    userId,
+                    EventType.FRIEND,
+                    OperationType.ADD,
+                    friendId
+            );
         } catch (DataAccessException e) {
             log.error("Failed to add friendship.", e);
             throw new ValidationException("Failed to add friendship: " + e.getMessage());
@@ -125,6 +136,12 @@ public class UserService {
         try {
             userStorage.removeFriend(userId, friendId);
             log.info("Friendship successfully removed: {} -> {}", userId, friendId);
+            eventService.createEvent(
+                    userId,
+                    EventType.FRIEND,
+                    OperationType.REMOVE,
+                    friendId
+            );
             return Map.of("friends", "You removed %s from friends".formatted(friend.get().getName()));
         } catch (DataAccessException e) {
             log.error("Failed to remove friendship.", e);
@@ -137,10 +154,10 @@ public class UserService {
      *
      * @param userId
      * @param otherId
-     * @return Collection<User>
+     * @return List<User>
      * @throws NotFoundException
      */
-    public Collection<User> getCommonFriend(Long userId, Long otherId) {
+    public List<User> getCommonFriend(Long userId, Long otherId) {
         if (!usersIdsValidation(userId, otherId)) {
             log.error("One or both user IDs are invalid.");
             throw new NotFoundException("One or both users not found!");
@@ -153,10 +170,10 @@ public class UserService {
      * Retrieves the friend list of a user.
      *
      * @param userId
-     * @return Collection<User>
+     * @return List<User>
      * @throws NotFoundException
      */
-    public Collection<User> getFriends(Long userId) {
+    public List<User> getFriends(Long userId) {
         log.trace("Validating user ID.");
         if (!userStorage.getById(userId).isPresent()) {
             log.error("User ID {} not found.", userId);
@@ -164,7 +181,7 @@ public class UserService {
         }
 
         log.trace("Fetching friends for user ID: {}", userId);
-        Collection<User> friends = userStorage.getFriends(userId);
+        List<User> friends = userStorage.getFriends(userId);
 
         log.info("Found {} friends for user ID: {}", friends.size(), userId);
         return friends;
@@ -195,5 +212,101 @@ public class UserService {
                 .max()
                 .orElse(0);
         return ++currentId;
+    }
+
+    /**
+     * Deletes a user and all related data by user ID.
+     *
+     * @param userId ID of the user to be deleted
+     * @throws NotFoundException if the user does not exist
+     */
+    public void deleteById(long userId) {
+        log.debug("Attempting to delete user with ID {}", userId);
+        if (userStorage.getById(userId).isEmpty()) {
+            log.warn("User with ID {} not found", userId);
+            throw new NotFoundException("User with ID " + userId + " not found");
+        }
+        log.trace("Deleting user ID {}", userId);
+        userStorage.deleteById(userId);
+        log.info("Successfully deleted user with ID {}", userId);
+    }
+
+    /**
+     * Retrieves a user by ID.
+     *
+     * @param userId ID of the user to retrieve
+     * @return the user object if found
+     * @throws NotFoundException if the user does not exist
+     */
+    public Optional<User> getUserById(long userId) {
+        log.debug("Attempting to retrieve user with ID {}", userId);
+        return userStorage.getById(userId);
+    }
+
+    /**
+     * Returns a list of recommended movies to watch.
+     *
+     * @param userId ID of the user
+     * @return list of films
+     * @throws NotFoundException if the user does not exist
+     */
+    public List<Film> getRecommendations(long userId) {
+        if (userStorage.getById(userId).isEmpty()) {
+            throw new NotFoundException("User with ID " + userId + " not found");
+        }
+
+        /*
+        Getting a table in the following format:
+
+        {
+            'userId1': [filmId1, filmId3],
+            'userId2': [filmId2, filmId3],
+            'userId3': [filmId1]
+        }
+         */
+
+        Map<Long, Set<Long>> usersLikes = new HashMap<>();
+
+        // Builds a map of user IDs to their liked film IDs.
+        List<Film> movies = filmService.getAll();
+        for (Film film : movies) {
+            for (Long id : film.getLikes()) {
+                usersLikes.computeIfAbsent(id, k -> new HashSet<>()).add(film.getId());
+            }
+        }
+
+        if (!usersLikes.containsKey(userId)) {
+            return Collections.emptyList();
+        }
+
+        // Finds the user whose liked films most closely match the given user's liked films.
+        Long mostSimilarUserId = null;
+        int maxOverlap = 0;
+
+        for (Long id : usersLikes.keySet()) {
+            // Do not compare with itself.
+            if (id.equals(userId)) {
+                continue;
+            }
+
+            Set<Long> intersection = new HashSet<>(usersLikes.get(userId));
+            intersection.retainAll(usersLikes.get(id));
+            int overlap = intersection.size();
+
+            if (overlap > maxOverlap) {
+                mostSimilarUserId = id;
+                maxOverlap = overlap;
+            }
+        }
+
+        if (mostSimilarUserId == null) {
+            return Collections.emptyList();
+        }
+
+        // Creating a list of recommended movies
+        final Long userWithGreatestMatch = mostSimilarUserId;
+        return movies.stream()
+                .filter(film -> usersLikes.get(userWithGreatestMatch).contains(film.getId()) && !usersLikes.get(userId).contains(film.getId()))
+                .toList();
     }
 }

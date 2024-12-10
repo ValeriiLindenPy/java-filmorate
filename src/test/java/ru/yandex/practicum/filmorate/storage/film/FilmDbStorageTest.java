@@ -4,32 +4,36 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.context.annotation.Import;
 
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorRowMapper;
+import ru.yandex.practicum.filmorate.storage.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.MPARowMapper;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Optional;
 
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({FilmDbStorage.class, FilmRowMapper.class, MPAStorage.class, MPARowMapper.class,
-LikeStorage.class})
-@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
+        LikeStorage.class, DirectorStorage.class, DirectorRowMapper.class})
+@AutoConfigureTestDatabase
 public class FilmDbStorageTest {
     private final MPAStorage mpaStorage;
     private final FilmDbStorage filmStorage;
-    private final LikeStorage likeStorage;
 
     @Test
     public void testGetById() {
@@ -50,7 +54,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void testGetAll() {
-        Collection<Film> films = filmStorage.getAll();
+        List<Film> films = filmStorage.getAll();
 
         assertThat(films).hasSize(5);
     }
@@ -126,18 +130,69 @@ public class FilmDbStorageTest {
     }
 
 
-
     @Test
     public void testGetTop() {
-        likeStorage.addLike(1L, 2L);
-        likeStorage.addLike(2L, 2L);
 
-        Collection<Film> topFilms = filmStorage.getTop(2);
+        List<Film> topFilms = filmStorage.getTop(2);
 
         assertThat(topFilms).hasSize(2);
 
         Film topFilm = topFilms.iterator().next();
 
         assertThat(topFilm.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    public void testGetCommonFilms() {
+        List<Film> commonFilms = filmStorage.getCommonFilms(1L, 2L);
+
+        assertThat(commonFilms).hasSize(1);
+
+        Film commonFilm = commonFilms.getFirst();
+        assertThat(commonFilm.getName()).isEqualTo("Inception");
+        assertThat(commonFilm.getId()).isEqualTo(2L);
+    }
+
+    @Test
+    public void testDirectorFilmsByLikes() {
+        List<Film> directorFilms = filmStorage.getDirectorFilmSortedByLike(1L);
+        assertThat(directorFilms).hasSize(2);
+        assertThat(directorFilms).first().isEqualTo(filmStorage.getById(2L).get());
+    }
+
+    @Test
+    public void testDirectorFilmsByYear() {
+        List<Film> directorFilms = filmStorage.getDirectorFilmSortedByYear(1L);
+        assertThat(directorFilms).hasSize(2);
+        assertThat(directorFilms).first().isEqualTo(filmStorage.getById(1L).get());
+    }
+
+    @Test
+    public void testGetTopYearAndGenre() {
+        List<Film> topFilmsByYearAndGenre = filmStorage.getTopYearAndGenre(1, 6, 1999);
+
+        assertThat(topFilmsByYearAndGenre)
+                .isNotNull()
+                .hasSize(1);
+
+        Film topFilm = topFilmsByYearAndGenre.iterator().next();
+        assertThat(topFilm.getId()).isEqualTo(1L);
+        assertThat(topFilm.getReleaseDate().getYear()).isEqualTo(1999);
+    }
+
+    @Test
+    public void searchByParam() {
+        List<Film> films = filmStorage.searchByParam("matrix", FilmsSearchBy.TITLE);
+        assertThat(films).hasSize(1);
+        assertThat(films).first().isEqualTo(filmStorage.getById(1L).get());
+
+        films = filmStorage.searchByParam("ron", FilmsSearchBy.DIRECTOR);
+        assertThat(films).hasSize(1);
+        assertThat(films).first().isEqualTo(filmStorage.getById(1L).get());
+
+        films = filmStorage.searchByParam("on", FilmsSearchBy.ALL);
+        assertThat(films).hasSize(2);
+        assertThat(films).first().isEqualTo(filmStorage.getById(2L).get());
+        assertThat(films).last().isEqualTo(filmStorage.getById(1L).get());
     }
 }

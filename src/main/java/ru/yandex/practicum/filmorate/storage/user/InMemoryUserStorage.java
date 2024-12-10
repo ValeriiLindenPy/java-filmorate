@@ -27,8 +27,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getAll() {
-        return users.values();
+    public List<User> getAll() {
+        return users.values().stream().toList();
     }
 
     @Override
@@ -71,7 +71,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getFriends(Long userId) {
+    public List<User> getFriends(Long userId) {
         return friendships.get(userId).stream().map(
                 friendId -> getById(friendId).get()
         ).collect(Collectors.toList());

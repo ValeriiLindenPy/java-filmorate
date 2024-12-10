@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,8 +38,10 @@ public class Film {
 
     @NotNull(groups = ValidationMarker.OnCreate.class, message = "Дата выпуска не может быть null.")
     private LocalDate releaseDate;
-
+    @JsonIgnore
     private Set<Long> likes = new HashSet<>();
+
+    private Set<Director> directors = new HashSet<>();
 
     @NotNull(groups = ValidationMarker.OnCreate.class, message = "Продолжительность не может быть null.")
     @Positive(message = "Продолжительность не может быть отрицательной.",

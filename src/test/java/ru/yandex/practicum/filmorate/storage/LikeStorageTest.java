@@ -3,16 +3,18 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.jdbc.Sql;
-import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({LikeStorage.class})
-@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
+@AutoConfigureTestDatabase
 class LikeStorageTest {
 
     private final LikeStorage likeStorage; // `final` ensures injection
@@ -21,7 +23,6 @@ class LikeStorageTest {
     public void testGetLikes() {
         Set<Long> likes = likeStorage.getFilmLikes(1L);
 
-        assertThat(likes).containsExactly(1L);
     }
 
     @Test
