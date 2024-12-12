@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @Primary
@@ -92,7 +93,7 @@ public class FilmDbStorage implements FilmStorage {
                     ORDER BY likes_count.likes DESC
                     LIMIT ?;
                 """;
-        return jdbc.query(query, mapper, count);
+        return jdbc.query(query, mapper, count).stream().distinct().collect(Collectors.toList());
     }
 
     @Override
@@ -102,7 +103,7 @@ public class FilmDbStorage implements FilmStorage {
                     ORDER BY likes_count.likes DESC
                     LIMIT ?;
                 """;
-        return jdbc.query(query, mapper, year, count);
+        return jdbc.query(query, mapper, year, count).stream().distinct().collect(Collectors.toList());
     }
 
     @Override
@@ -112,7 +113,7 @@ public class FilmDbStorage implements FilmStorage {
                     ORDER BY likes_count.likes DESC
                     LIMIT ?;
                 """;
-        return jdbc.query(query, mapper, genreId, count);
+        return jdbc.query(query, mapper, genreId, count).stream().distinct().collect(Collectors.toList());
     }
 
     @Override
@@ -122,7 +123,7 @@ public class FilmDbStorage implements FilmStorage {
                     ORDER BY likes_count.likes DESC
                     LIMIT ?;
                 """;
-        return jdbc.query(query, mapper, genreId, year, count);
+        return jdbc.query(query, mapper, genreId, year, count).stream().distinct().collect(Collectors.toList());
     }
 
     public List<Film> getDirectorFilmSortedByLike(Long directorId) {

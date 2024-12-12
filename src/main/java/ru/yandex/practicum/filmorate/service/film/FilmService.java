@@ -125,6 +125,7 @@ public class FilmService {
         }
 
         setGenresForFilms(films);
+        setDirectorsForFilms(films);
         return films;
     }
 
