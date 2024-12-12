@@ -91,13 +91,14 @@ public class ReviewStorage {
     }
 
     public Review updateReview(Review review) {
-        String sql = "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ? WHERE id = ?;";
+        String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?;";
+//                ", user_id = ?, film_id = ? WHERE id = ?;";
 
         jdbc.update(sql,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
+//                review.getUserId(),
+//                review.getFilmId(),
                 review.getReviewId());
 
         return review;

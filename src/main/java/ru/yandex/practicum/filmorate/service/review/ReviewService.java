@@ -83,13 +83,13 @@ public class ReviewService {
             review.setContent(reviewDto.getContent());
         }
 
-        if (reviewDto.getUserId() != null) {
-            review.setUserId(reviewDto.getUserId());
-        }
-
-        if (reviewDto.getFilmId() != null) {
-            review.setFilmId(reviewDto.getFilmId());
-        }
+//        if (reviewDto.getUserId() != null) {
+//            review.setUserId(reviewDto.getUserId());
+//        }
+//
+//        if (reviewDto.getFilmId() != null) {
+//            review.setFilmId(reviewDto.getFilmId());
+//        }
 
         if (reviewDto.getIsPositive() != null) {
             review.setIsPositive(reviewDto.getIsPositive());

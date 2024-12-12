@@ -28,7 +28,6 @@ public class DirectorStorage {
     }
 
 
-
     public List<Director> getAll() {
         String findAllDirectorsQuery = "SELECT * FROM directors";
         return jdbc.query(findAllDirectorsQuery, mapper);
@@ -74,7 +73,7 @@ public class DirectorStorage {
         return filmDirectors;
     }
 
-    public Set<Director> getAllDirectorByFilmID (Long filmId) {
+    public Set<Director> getAllDirectorByFilmID(Long filmId) {
         String findDirectorsByFilmId = "SELECT d.* \n" +
                 "FROM directors d \n" +
                 "WHERE d.ID IN (\n" +
