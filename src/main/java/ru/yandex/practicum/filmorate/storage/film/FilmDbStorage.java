@@ -21,7 +21,7 @@ public class FilmDbStorage implements FilmStorage {
     private static final String BASE_FILM_QUERY = """
                 SELECT f.*, mr.ID AS mpa_id, mr.name AS mpa_name
                 FROM FILMS f
-                JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
+                LEFT JOIN (SELECT fl.film_id, COUNT(fl.user_id) AS likes
                       FROM FILM_LIKES fl
                       GROUP BY fl.film_id) likes_count ON f.ID = likes_count.film_id
                 LEFT JOIN FILM_GENRES fg ON f.ID = fg.film_id

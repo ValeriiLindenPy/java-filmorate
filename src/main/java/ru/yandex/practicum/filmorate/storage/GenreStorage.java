@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,7 @@ import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class GenreStorage {
     private final JdbcTemplate jdbc;
     private final GenreRowMapper mapper;
@@ -73,7 +75,8 @@ public class GenreStorage {
         String sql = "SELECT f.ID AS film_id, g.ID AS genre_id, g.NAME AS genre_name " +
                 "FROM FILMS f " +
                 "LEFT JOIN FILM_GENRES fg ON fg.FILM_ID = f.ID " +
-                "LEFT JOIN GENRES g ON g.ID = fg.GENRE_ID";
+                "LEFT JOIN GENRES g ON g.ID = fg.GENRE_ID " +
+                "ORDER BY g.ID ASC";
         Map<Long, Set<Genre>> filmGenres = new HashMap<>();
 
         jdbc.query(sql, rs -> {
@@ -82,8 +85,12 @@ public class GenreStorage {
                         .id(rs.getLong("genre_id"))
                         .name(rs.getString("genre_name"))
                         .build();
-
+            if (!rs.wasNull()) {
                 filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+                log.debug("Film ID  {} set genre {}", filmId, genre.getId());
+            } else {
+                log.debug("Film ID {} has no genres.", filmId);
+            }
         });
 
         return filmGenres;

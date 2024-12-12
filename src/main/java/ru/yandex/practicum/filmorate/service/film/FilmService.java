@@ -42,16 +42,18 @@ public class FilmService {
     }
 
     /**
-     * Retrieves a film by its ID.
+     * Retrieves a director by its ID.
      *
      * @param id
      * @return {@link Film}
      * @throws NotFoundException
      */
     public Film getById(long id) {
-        Film film = filmStorage.getById(id).orElseThrow(() ->
-                new NotFoundException("Film with id %d not found".formatted(id)));
+        Film film = filmStorage.getById(id)
+                .orElseThrow(() -> new NotFoundException("Film with id %d not found".formatted(id)));
         film.setGenres(genreStorage.getFilmGenres(id));
+        film.setDirectors(directorStorage.getAllDirectorByFilmID(id));
+        sortAndSetGenres(film);
         return film;
     }
 
@@ -73,6 +75,9 @@ public class FilmService {
         mpaStorage.saveMPA(film);
         genreStorage.saveGenres(film);
         directorStorage.saveDirectors(film);
+
+        sortAndSetGenres(film);
+
         return film;
     }
 
@@ -84,22 +89,19 @@ public class FilmService {
      * @throws NotFoundException
      */
     public Film update(Film newFilm) {
-        log.debug("Checking existence of film with ID {}", newFilm.getId());
         if (filmStorage.getById(newFilm.getId()).isPresent()) {
-            log.trace("Updating film in storage");
-            // update film
             filmStorage.update(newFilm);
-            //update mpa
             mpaStorage.updateMPA(newFilm);
-            //update genres
             genreStorage.updateGenres(newFilm);
-            //update directors
             directorStorage.updateDirectors(newFilm);
+
+            sortAndSetGenres(newFilm);
+
             return newFilm;
         }
-        log.warn("Film with ID {} not found", newFilm.getId());
         throw new NotFoundException("Film not found!");
     }
+
 
     /**
      * Retrieves the top-rated films.
@@ -127,17 +129,22 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByDirectorSorted(Long directorId, String sortBy) {
+        directorStorage.getById(directorId)
+                .orElseThrow(() -> new NotFoundException("Director with id " + directorId + " not found"));
+
         List<Film> films;
         if ("year".equalsIgnoreCase(sortBy)) {
             films = filmStorage.getDirectorFilmSortedByYear(directorId);
         } else if ("likes".equalsIgnoreCase(sortBy)) {
             films = filmStorage.getDirectorFilmSortedByLike(directorId);
         } else {
-            throw new IllegalArgumentException("Invalid sortBy parameter");
+            throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
         }
+
         setAdditionalFieldsForFilms(films);
         return films;
     }
+
 
     /**
      * Get common films between the user and their friend, sorted by popularity
@@ -162,7 +169,13 @@ public class FilmService {
         Map<Long, Set<Genre>> filmGenres = genreStorage.getAllFilmsGenres();
         for (Film film : films) {
             Set<Genre> genres = filmGenres.getOrDefault(film.getId(), new HashSet<>());
-            film.setGenres(genres);
+
+            // Convert set to a list and sort by genre ID
+            List<Genre> sortedGenres = new ArrayList<>(genres);
+            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
+
+            film.setGenres(new LinkedHashSet<>(sortedGenres));
+            log.debug("film genres : [{}]", film.getGenres());
         }
     }
 
@@ -298,6 +311,14 @@ public class FilmService {
         List<Film> films = (filmStorage.searchByParam(query, FilmsSearchBy.from(searchBy)));
         setAdditionalFieldsForFilms(films);
         return films;
+    }
+
+    private void sortAndSetGenres(Film film) {
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            List<Genre> sortedGenres = new ArrayList<>(film.getGenres());
+            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
+            film.setGenres(new LinkedHashSet<>(sortedGenres));
+        }
     }
 
     /**

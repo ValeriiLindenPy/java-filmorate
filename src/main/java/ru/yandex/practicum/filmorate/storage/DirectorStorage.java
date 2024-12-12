@@ -27,6 +27,8 @@ public class DirectorStorage {
         }
     }
 
+
+
     public List<Director> getAll() {
         String findAllDirectorsQuery = "SELECT * FROM directors";
         return jdbc.query(findAllDirectorsQuery, mapper);
@@ -70,6 +72,18 @@ public class DirectorStorage {
         });
 
         return filmDirectors;
+    }
+
+    public Set<Director> getAllDirectorByFilmID (Long filmId) {
+        String findDirectorsByFilmId = "SELECT d.* \n" +
+                "FROM directors d \n" +
+                "WHERE d.ID IN (\n" +
+                "SELECT fd.director_id\n" +
+                "FROM film_directors fd \n" +
+                "WHERE fd.film_id = ?\n" +
+                ")";
+        return new HashSet<>(jdbc.query(findDirectorsByFilmId, mapper, filmId));
+
     }
 
     public void saveDirectors(Film film) {
