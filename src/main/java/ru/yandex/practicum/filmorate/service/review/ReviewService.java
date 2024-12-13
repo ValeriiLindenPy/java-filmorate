@@ -158,12 +158,6 @@ public class ReviewService {
      */
     public void addLike(Long reviewId, Long userId) {
         addLikeDislike(reviewId, userId, true);
-        eventService.createEvent(
-                userId,
-                EventType.LIKE,
-                OperationType.ADD,
-                reviewId
-        );
     }
 
     /**

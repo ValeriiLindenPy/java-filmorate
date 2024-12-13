@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
@@ -41,15 +42,15 @@ public class EventService {
      */
     public List<Event> getEventsByUserId(Long userId) {
         log.trace("Checking existence of user with ID {}", userId);
-
         // Проверка, существует ли пользователь с заданным userId
         if (userStorage.getById(userId).isEmpty()) {
             log.warn("User with ID {} does not exist", userId);
-            return Collections.emptyList();  // Возвращаем пустой список, если пользователь не найден
+            throw new NotFoundException("User with ID %s does not exist".formatted(userId));
         }
         log.trace("Retrieves a list of events for a user {}", userId);
         return eventStorage.getEventsByUserId(userId);
     }
+
 
     /**
      * Utility method to create and save an event.
