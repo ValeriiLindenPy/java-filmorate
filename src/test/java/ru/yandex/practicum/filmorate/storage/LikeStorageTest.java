@@ -10,9 +10,7 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.mapper.EventRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
@@ -65,12 +63,6 @@ class LikeStorageTest {
         filmStorage.create(film);
         filmStorage.create(film2);
         userStorage.create(user);
-    }
-
-    @Test
-    public void testGetLikes() {
-        Set<Long> likes = likeStorage.getFilmLikes(1L);
-
     }
 
     @Test
