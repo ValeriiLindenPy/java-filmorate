@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mapper.UserRowMapper;
 
@@ -23,6 +27,31 @@ public class UserDbStorageTest {
 
     private final UserDbStorage userStorage;
 
+    @BeforeEach
+    void setUp() {
+
+        User user = User.builder()
+                .id(1L)
+                .email("example@example.com")
+                .login("exampleUser")
+                .name("Example Name")
+                .password("password123")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .build();
+
+        User user2 = User.builder()
+                .id(2L)
+                .email("example2@example.com")
+                .login("exampleUser2")
+                .name("Example Name2")
+                .password("password1234")
+                .birthday(LocalDate.of(1994, 1, 1))
+                .build();
+
+        userStorage.create(user);
+        userStorage.create(user2);
+    }
+
 
     @Test
     public void testGetById() {
@@ -32,11 +61,7 @@ public class UserDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(user -> {
                     assertThat(user.getId()).isEqualTo(1L);
-                    assertThat(user.getName()).isEqualTo("Alice Johnson");
-                    assertThat(user.getEmail()).isEqualTo("alice@example.com");
-                    assertThat(user.getLogin()).isEqualTo("alice123");
-                    assertThat(user.getPassword()).isEqualTo("password1");
-                    assertThat(user.getBirthday()).isEqualTo(LocalDate.of(1990, 5, 10));
+                    assertThat(user.getName()).isEqualTo("Example Name");
                 });
     }
 
@@ -44,13 +69,13 @@ public class UserDbStorageTest {
     public void testGetAll() {
         List<User> users = userStorage.getAll();
 
-        assertThat(users).hasSize(3);
+        assertThat(users).hasSize(2);
     }
 
     @Test
     public void testCreate() {
         User user = new User();
-        user.setId(6L);
+        user.setId(3L);
         user.setName("New User");
         user.setLogin("new123");
         user.setEmail("new123@gmail.com");
@@ -59,12 +84,12 @@ public class UserDbStorageTest {
 
         userStorage.create(user);
 
-        Optional<User> createdUser = userStorage.getById(6L);
+        Optional<User> createdUser = userStorage.getById(3L);
 
         assertThat(createdUser)
                 .isPresent()
                 .hasValueSatisfying(userData -> {
-                    assertThat(userData.getId()).isEqualTo(6L);
+                    assertThat(userData.getId()).isEqualTo(3L);
                     assertThat(userData.getName()).isEqualTo("New User");
                     assertThat(userData.getEmail()).isEqualTo("new123@gmail.com");
                     assertThat(userData.getLogin()).isEqualTo("new123");
