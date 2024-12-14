@@ -154,7 +154,7 @@ class ReviewServiceTest {
     void shouldAddLikeToReview() {
         Review review = reviewService.createReview(new Review(null, "Liked review", true, 1L, 2L, 0L));
 
-        reviewService.addLike(review.getReviewId(), 1L);
+        reviewService.addLike(review.getReviewId(), 1L, true);
 
         Review updated = reviewService.findById(review.getReviewId());
         assertTrue(updated.getUseful() > 0);
@@ -163,7 +163,7 @@ class ReviewServiceTest {
     @Test
     void shouldRemoveLike() {
         Review review = reviewService.createReview(new Review(null, "Like to remove", true, 1L, 2L, 0L));
-        reviewService.addLike(review.getReviewId(), 1L);
+        reviewService.addLike(review.getReviewId(), 1L, true);
 
         reviewService.deleteLike(review.getReviewId(), 1L);
 
@@ -174,7 +174,7 @@ class ReviewServiceTest {
     @Test
     void shouldHandleDislike() {
         Review review = reviewService.createReview(new Review(null, "Dislike this", true, 1L, 2L, 0L));
-        reviewService.addDislike(review.getReviewId(), 1L);
+        reviewService.addLike(review.getReviewId(), 1L, false);
 
         Review updated = reviewService.findById(review.getReviewId());
         assertTrue(updated.getUseful() < 0);
@@ -183,9 +183,9 @@ class ReviewServiceTest {
     @Test
     void shouldRemoveDislike() {
         Review review = reviewService.createReview(new Review(null, "Remove dislike", true, 1L, 2L, 0L));
-        reviewService.addDislike(review.getReviewId(), 1L);
+        reviewService.addLike(review.getReviewId(), 1L, false);
 
-        reviewService.deleteDislike(review.getReviewId(), 1L);
+        reviewService.deleteLike(review.getReviewId(), 1L);
 
         Review updated = reviewService.findById(review.getReviewId());
         assertEquals(0L, updated.getUseful());

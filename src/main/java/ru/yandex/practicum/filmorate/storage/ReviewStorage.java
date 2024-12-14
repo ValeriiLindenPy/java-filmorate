@@ -39,7 +39,6 @@ public class ReviewStorage {
     private static final String UPDATE_LIKE = "UPDATE review_ratings SET is_like = ? WHERE review_id = ? AND user_id = ?";
 
     private static final String DELETE_LIKE_QUERY = "DELETE FROM review_ratings WHERE review_id = ? AND user_id = ? ";
-    private static final String DELETE_DISLIKE_QUERY = DELETE_LIKE_QUERY + "AND is_like = false";
 
     private final ReviewMapper mapper;
     private final JdbcTemplate jdbc;
@@ -92,13 +91,10 @@ public class ReviewStorage {
 
     public Review updateReview(Review review) {
         String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?;";
-//                ", user_id = ?, film_id = ? WHERE id = ?;";
 
         jdbc.update(sql,
                 review.getContent(),
                 review.getIsPositive(),
-//                review.getUserId(),
-//                review.getFilmId(),
                 review.getReviewId());
 
         return review;
@@ -109,29 +105,16 @@ public class ReviewStorage {
         jdbc.update(sql, id);
     }
 
-    public void addLike(Long reviewId, Long userId) {
+    public void addLike(Long reviewId, Long userId, boolean isLike) {
         Integer count = jdbc.queryForObject(FIND_LIKE, Integer.class, reviewId, userId);
         if (count != null && count > 0) {
-            jdbc.update(UPDATE_LIKE, true, reviewId, userId);
+            jdbc.update(UPDATE_LIKE, isLike, reviewId, userId);
         } else {
-            jdbc.update(ADD_LIKE, reviewId, userId, true);
-        }
-    }
-
-    public void addDislike(Long reviewId, Long userId) {
-        Integer count = jdbc.queryForObject(FIND_LIKE, Integer.class, reviewId, userId);
-        if (count != null && count > 0) {
-            jdbc.update(UPDATE_LIKE, false, reviewId, userId);
-        } else {
-            jdbc.update(ADD_LIKE, reviewId, userId, false);
+            jdbc.update(ADD_LIKE, reviewId, userId, isLike);
         }
     }
 
     public void deleteLike(Long reviewId, Long userId) {
         jdbc.update(DELETE_LIKE_QUERY, reviewId, userId);
-    }
-
-    public void deleteDislike(Long reviewId, Long userId) {
-        jdbc.update(DELETE_DISLIKE_QUERY, reviewId, userId);
     }
 }
