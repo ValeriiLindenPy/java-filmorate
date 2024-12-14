@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.dto.RequestUpdateReviewDto;
-import ru.yandex.practicum.filmorate.service.event.EventService;
-import ru.yandex.practicum.filmorate.service.review.ReviewService;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;

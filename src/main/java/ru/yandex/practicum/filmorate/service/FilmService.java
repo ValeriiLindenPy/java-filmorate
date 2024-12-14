@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.film;
+package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
+import ru.yandex.practicum.filmorate.model.enums.SortType;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
@@ -133,18 +134,19 @@ public class FilmService {
         directorStorage.getById(directorId)
                 .orElseThrow(() -> new NotFoundException("Director with id " + directorId + " not found"));
 
+        SortType sortType = SortType.fromString(sortBy);
         List<Film> films;
-        if ("year".equalsIgnoreCase(sortBy)) {
-            films = filmStorage.getDirectorFilmSortedByYear(directorId);
-        } else if ("likes".equalsIgnoreCase(sortBy)) {
-            films = filmStorage.getDirectorFilmSortedByLike(directorId);
-        } else {
-            throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
+
+        switch (sortType) {
+            case YEAR -> films = filmStorage.getDirectorFilmSortedByYear(directorId);
+            case LIKES -> films = filmStorage.getDirectorFilmSortedByLike(directorId);
+            default -> throw new IllegalArgumentException("Unexpected sort type: " + sortType);
         }
 
         setAdditionalFieldsForFilms(films);
         return films;
     }
+
 
 
     /**

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.user;
+package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.service.event.EventService;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.model.OperationType;
 
@@ -238,9 +236,10 @@ public class UserService {
      * @return the user object if found
      * @throws NotFoundException if the user does not exist
      */
-    public Optional<User> getUserById(long userId) {
+    public User getUserById(long userId) {
         log.debug("Attempting to retrieve user with ID {}", userId);
-        return userStorage.getById(userId);
+        return userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     /**

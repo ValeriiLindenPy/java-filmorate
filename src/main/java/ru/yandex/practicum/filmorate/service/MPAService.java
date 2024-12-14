@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.mpa;
+package ru.yandex.practicum.filmorate.service;
 
 
 import lombok.RequiredArgsConstructor;

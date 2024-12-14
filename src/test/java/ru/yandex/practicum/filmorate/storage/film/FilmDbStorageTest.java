@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Import;
 
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.enums.FilmsSearchBy;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
