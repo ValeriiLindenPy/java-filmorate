@@ -20,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewStorage reviewStorage;
-    private final UserStorage userService;
-    private final FilmStorage filmService;
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
     private final EventService eventService;
 
     /**
@@ -31,13 +31,15 @@ public class ReviewService {
      * @return {@link Review}
      */
     public Review createReview(Review review) {
-        if (userService.getById(review.getUserId()).isEmpty()) {
-            throw new NotFoundException("User with id = %d not found".formatted(review.getUserId()));
-        }
+        userStorage.getById(review.getUserId())
+                .orElseThrow(() -> new NotFoundException(
+                        "User with id = %d not found".formatted(review.getUserId()))
+                );
 
-        if (filmService.getById(review.getFilmId()).isEmpty()) {
-            throw new NotFoundException("Film with id = %d not found".formatted(review.getFilmId()));
-        }
+        filmStorage.getById(review.getFilmId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Film with id = %d not found".formatted(review.getFilmId())
+                ));
 
         Long id = reviewStorage.createReview(review);
 
@@ -66,11 +68,11 @@ public class ReviewService {
                         "Review with id = %d not found".formatted(reviewDto.getReviewId())
                 ));
 
-        if (reviewDto.getUserId() != null && userService.getById(reviewDto.getUserId()).isEmpty()) {
+        if (reviewDto.getUserId() != null && userStorage.getById(reviewDto.getUserId()).isEmpty()) {
             throw new NotFoundException("User with id = %d not found".formatted(reviewDto.getUserId()));
         }
 
-        if (reviewDto.getFilmId() != null && filmService.getById(reviewDto.getFilmId()).isEmpty()) {
+        if (reviewDto.getFilmId() != null && filmStorage.getById(reviewDto.getFilmId()).isEmpty()) {
             throw new NotFoundException("Film with id = %d not found".formatted(reviewDto.getFilmId()));
         }
 
@@ -81,14 +83,6 @@ public class ReviewService {
 
             review.setContent(reviewDto.getContent());
         }
-
-//        if (reviewDto.getUserId() != null) {
-//            review.setUserId(reviewDto.getUserId());
-//        }
-//
-//        if (reviewDto.getFilmId() != null) {
-//            review.setFilmId(reviewDto.getFilmId());
-//        }
 
         if (reviewDto.getIsPositive() != null) {
             review.setIsPositive(reviewDto.getIsPositive());
@@ -150,92 +144,41 @@ public class ReviewService {
     }
 
     /**
-     * Add like to a review
-     *
-     * @param reviewId
-     * @param userId
-     */
-    public void addLike(Long reviewId, Long userId) {
-        addLikeDislike(reviewId, userId, true);
-    }
-
-    /**
-     * Add dislike to a review
-     *
-     * @param reviewId
-     * @param userId
-     */
-    public void addDislike(Long reviewId, Long userId) {
-        addLikeDislike(reviewId, userId, false);
-    }
-
-    /**
      * Add like or dislike depending on {@link  Boolean} isLike
+     *
      * @param reviewId
      * @param userId
      * @param isLike
      */
-    private void addLikeDislike(Long reviewId, Long userId, boolean isLike) {
-        if (reviewStorage.findById(reviewId).isEmpty()) {
-            throw new NotFoundException("Review with id = %d not found".formatted(reviewId));
-        }
+    public void addLike(Long reviewId, Long userId, boolean isLike) {
+        reviewStorage.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Review with id = %d not found".formatted(reviewId)
+                ));
 
-        if (userService.getById(userId).isEmpty()) {
-            throw new NotFoundException("User with id = %d not found".formatted(userId));
-        }
+        userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException(
+                        "User with id = %d not found".formatted(userId)
+                ));
 
-        if (isLike) {
-            reviewStorage.addLike(reviewId, userId);
-        } else {
-            reviewStorage.addDislike(reviewId, userId);
-        }
+        reviewStorage.addLike(reviewId, userId, isLike);
     }
 
     /**
-     * deletes like to a review
+     * Deletes like or dislike depending on {@link  Boolean} isLike
      *
      * @param reviewId
      * @param userId
      */
     public void deleteLike(Long reviewId, Long userId) {
-        deleteLikeDislike(reviewId, userId, true);
-        eventService.createEvent(
-                userId,
-                EventType.LIKE,
-                OperationType.REMOVE,
-                reviewId
-        );
-    }
-
-    /**
-     * Deletes dislike to a review
-     *
-     * @param reviewId
-     * @param userId
-     */
-    public void deleteDislike(Long reviewId, Long userId) {
-        deleteLikeDislike(reviewId, userId, false);
-    }
-
-    /**
-     * Deletes like or dislike depending on {@link  Boolean} isLike
-     * @param reviewId
-     * @param userId
-     * @param isLike
-     */
-    private void deleteLikeDislike(Long reviewId, Long userId, boolean isLike) {
         if (reviewStorage.findById(reviewId).isEmpty()) {
             throw new NotFoundException("Review with id = %d not found".formatted(reviewId));
         }
 
-        if (userService.getById(userId).isEmpty()) {
+        if (userStorage.getById(userId).isEmpty()) {
             throw new NotFoundException("User with id = %d not found".formatted(userId));
         }
 
-        if (isLike) {
-            reviewStorage.deleteLike(reviewId, userId);
-        } else {
-            reviewStorage.deleteDislike(reviewId, userId);
-        }
+        reviewStorage.deleteLike(reviewId, userId);
     }
 }
