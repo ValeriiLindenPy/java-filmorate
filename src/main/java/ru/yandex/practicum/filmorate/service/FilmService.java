@@ -152,7 +152,7 @@ public class FilmService {
     /**
      * Get common films between the user and their friend, sorted by popularity
      *
-     * @param userId - long
+     * @param userId   - long
      * @param friendId - long
      * @return {@link List}
      */

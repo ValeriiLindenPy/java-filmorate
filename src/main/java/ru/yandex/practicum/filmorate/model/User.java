@@ -31,7 +31,7 @@ public class User {
 
     private String name;
 
-//    @NotNull(groups = ValidationMarker.OnCreate.class, message = "Не указан пароль!")
+    //    @NotNull(groups = ValidationMarker.OnCreate.class, message = "Не указан пароль!")
 //    @Size(min = 4, message = "Пароль должен быть минимум 4 символа",
 //            groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
     private String password;

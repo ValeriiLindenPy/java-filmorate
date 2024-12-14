@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
-
 import java.util.List;
 
 @RestController
@@ -34,7 +33,7 @@ public class DirectorController {
     }
 
     @PutMapping
-    public Director update(@Valid @RequestBody Director newDirector) {
+    public Director update(@RequestBody Director newDirector) {
         return directorService.update(newDirector);
     }
 

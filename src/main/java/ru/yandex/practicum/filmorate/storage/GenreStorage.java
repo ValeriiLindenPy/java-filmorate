@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.mapper.GenreRowMapper;
+
 import java.util.*;
 
 
@@ -80,11 +81,11 @@ public class GenreStorage {
         Map<Long, Set<Genre>> filmGenres = new HashMap<>();
 
         jdbc.query(sql, rs -> {
-                Long filmId = rs.getLong("film_id");
-                Genre genre = Genre.builder()
-                        .id(rs.getLong("genre_id"))
-                        .name(rs.getString("genre_name"))
-                        .build();
+            Long filmId = rs.getLong("film_id");
+            Genre genre = Genre.builder()
+                    .id(rs.getLong("genre_id"))
+                    .name(rs.getString("genre_name"))
+                    .build();
             if (!rs.wasNull()) {
                 filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
                 log.debug("Film ID  {} set genre {}", filmId, genre.getId());
@@ -95,8 +96,6 @@ public class GenreStorage {
 
         return filmGenres;
     }
-
-
 
 
 }
