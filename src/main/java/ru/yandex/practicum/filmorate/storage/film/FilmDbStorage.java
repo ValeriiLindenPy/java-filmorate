@@ -164,19 +164,19 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getCommonFilms(long userId, long friendId) {
         String commonFilmsQuery = """
-            SELECT f.*, mr.name AS mpa_name, COUNT(fl.user_id) AS likes
-            FROM films f
-            LEFT JOIN film_likes fl ON f.id = fl.film_id
-            LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id
-            WHERE f.id IN (
-                SELECT fl1.film_id
-                FROM film_likes fl1
-                JOIN film_likes fl2 ON fl1.film_id = fl2.film_id
-                WHERE fl1.user_id = ? AND fl2.user_id = ?
-            )
-            GROUP BY f.id, mr.name
-            ORDER BY likes DESC;
-            """;
+                SELECT f.*, mr.name AS mpa_name, COUNT(fl.user_id) AS likes
+                FROM films f
+                LEFT JOIN film_likes fl ON f.id = fl.film_id
+                LEFT JOIN mpa_ratings mr ON f.mpa_id = mr.id
+                WHERE f.id IN (
+                    SELECT fl1.film_id
+                    FROM film_likes fl1
+                    JOIN film_likes fl2 ON fl1.film_id = fl2.film_id
+                    WHERE fl1.user_id = ? AND fl2.user_id = ?
+                )
+                GROUP BY f.id, mr.name
+                ORDER BY likes DESC;
+                """;
 
         return jdbc.query(commonFilmsQuery, mapper, userId, friendId);
     }
