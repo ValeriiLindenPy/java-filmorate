@@ -31,8 +31,9 @@ public class LikeService {
         filmStorage.getById(filmId).orElseThrow(() -> new NotFoundException("Film not found"));
         userStorage.getById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
-        likeStorage.removeLike(userId, filmId);
-        likeStorage.addLike(userId, filmId);
+        if (!likeStorage.getFilmLikes(filmId).contains(userId)) {
+            likeStorage.addLike(userId, filmId);
+        }
         eventService.createEvent(
                 userId,
                 EventType.LIKE,
