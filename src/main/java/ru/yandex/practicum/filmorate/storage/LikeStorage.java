@@ -18,11 +18,17 @@ public class LikeStorage {
     public void addLike(Long userId, Long filmId) {
         String addLikeQuery = "INSERT INTO film_likes (user_id, film_id) VALUES (?, ?)";
         jdbc.update(addLikeQuery, userId, filmId);
+
+        String incrementLikeCount = "UPDATE films SET like_count = like_count + 1 WHERE id = ?";
+        jdbc.update(incrementLikeCount, filmId);
     }
 
     public void removeLike(Long userId, Long filmId) {
         String deleteLikeQuery = "DELETE FROM film_likes WHERE user_id = ? AND film_id = ?";
         jdbc.update(deleteLikeQuery, userId, filmId);
+
+        String decrementLikeCount = "UPDATE films SET like_count = like_count - 1 WHERE id = ?";
+        jdbc.update(decrementLikeCount, filmId);
     }
 
     public Set<Long> getFilmLikes(Long filmId) {

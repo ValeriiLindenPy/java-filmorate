@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS films (
     duration INTEGER NOT NULL,
     release_date DATE NOT NULL,
     mpa_id BIGINT,
+    like_count INTEGER DEFAULT 0,
     CONSTRAINT fk_mpa_film FOREIGN KEY (mpa_id) REFERENCES mpa_ratings (id) ON DELETE CASCADE
 );
 
