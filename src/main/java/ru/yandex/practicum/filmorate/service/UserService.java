@@ -6,14 +6,15 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.OperationType;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.EventService;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
@@ -21,8 +22,10 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
-    private final EventService eventService;
-    private final FilmService filmService;
+    private final EventStorage eventStorage;
+    private final FilmDbStorage filmStorage;
+    private final LikeStorage likeStorage;
+    private final GenreStorage genreStorage;
 
     /**
      * Retrieves all users.
@@ -100,12 +103,7 @@ public class UserService {
         try {
             userStorage.addFriendship(userId, friendId);
             log.info("Friendship successfully added: {} -> {}", userId, friendId);
-            eventService.createEvent(
-                    userId,
-                    EventType.FRIEND,
-                    OperationType.ADD,
-                    friendId
-            );
+            addNewEvent(userId,friendId, EventType.FRIEND, OperationType.ADD);
         } catch (DataAccessException e) {
             log.error("Failed to add friendship.", e);
             throw new ValidationException("Failed to add friendship: " + e.getMessage());
@@ -136,18 +134,15 @@ public class UserService {
         try {
             userStorage.removeFriend(userId, friendId);
             log.info("Friendship successfully removed: {} -> {}", userId, friendId);
-            eventService.createEvent(
-                    userId,
-                    EventType.FRIEND,
-                    OperationType.REMOVE,
-                    friendId
-            );
+            addNewEvent(userId, friendId, EventType.FRIEND, OperationType.REMOVE);
             return Map.of("friends", "You removed %s from friends".formatted(friend.get().getName()));
         } catch (DataAccessException e) {
             log.error("Failed to remove friendship.", e);
             throw new ValidationException("Failed to remove friendship: " + e.getMessage());
         }
     }
+
+
 
     /**
      * Retrieves a list of common friends between two users.
@@ -187,6 +182,24 @@ public class UserService {
         return friends;
     }
 
+
+    /**
+     * Retrieves a list of events for a specific user.
+     *
+     * @param userId the ID of the user.
+     * @return a list of events associated with the user.
+     */
+    public List<Event> getEventsByUserId(Long userId) {
+        log.trace("Checking existence of user with ID {}", userId);
+        // Проверка, существует ли пользователь с заданным userId
+        if (userStorage.getById(userId).isEmpty()) {
+            log.warn("User with ID {} does not exist", userId);
+            throw new NotFoundException("User with ID %s does not exist".formatted(userId));
+        }
+        log.trace("Retrieves a list of events for a user {}", userId);
+        return eventStorage.getEventsByUserId(userId);
+    }
+
     /**
      * Validates both user IDs exist.
      *
@@ -212,6 +225,18 @@ public class UserService {
                 .max()
                 .orElse(0);
         return ++currentId;
+    }
+
+
+    private void addNewEvent(Long userId, Long friendId, EventType eventType, OperationType operationType) {
+        Event event = Event.builder()
+                .userId(userId)
+                .eventType(eventType)
+                .operation(operationType)
+                .timestamp(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .entityId(friendId)
+                .build();
+        eventStorage.addEvent(event);
     }
 
     /**
@@ -268,8 +293,27 @@ public class UserService {
 
         Map<Long, Set<Long>> usersLikes = new HashMap<>();
 
+
+        List<Film> movies = filmStorage.getAll();
+        // add likes
+        Map<Long, Set<Long>> filmsLikes = likeStorage.getAllFilmLikes();
+        for (Film movie : movies) {
+            movie.setLikes(filmsLikes.getOrDefault(movie.getId(), new HashSet<>()));
+        }
+
+        //add genres
+        Map<Long, Set<Genre>> filmGenres = genreStorage.getAllFilmsGenres();
+        for (Film movie : movies) {
+            Set<Genre> genres = filmGenres.getOrDefault(movie.getId(), new HashSet<>());
+
+            // Convert set to a list and sort by genre ID
+            List<Genre> sortedGenres = new ArrayList<>(genres);
+            sortedGenres.sort(Comparator.comparingLong(Genre::getId));
+
+            movie.setGenres(new LinkedHashSet<>(sortedGenres));
+        }
+
         // Builds a map of user IDs to their liked film IDs.
-        List<Film> movies = filmService.getAll();
         for (Film film : movies) {
             for (Long id : film.getLikes()) {
                 usersLikes.computeIfAbsent(id, k -> new HashSet<>()).add(film.getId());

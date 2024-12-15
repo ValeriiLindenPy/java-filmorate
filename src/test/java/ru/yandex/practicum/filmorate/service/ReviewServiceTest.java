@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Import({ReviewService.class, ReviewMapper.class, ReviewStorage.class, UserDbStorage.class,
         FilmDbStorage.class, UserRowMapper.class,
-        FilmRowMapper.class, EventService.class, EventStorage.class,
+        FilmRowMapper.class, EventStorage.class,
         EventRowMapper.class})
 @AutoConfigureTestDatabase
 class ReviewServiceTest {

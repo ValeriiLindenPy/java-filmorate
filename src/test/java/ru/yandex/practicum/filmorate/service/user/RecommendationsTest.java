@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikeService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -28,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Import({UserService.class, UserDbStorage.class, UserRowMapper.class, FilmService.class, FilmDbStorage.class,
         FilmRowMapper.class, LikeService.class, LikeStorage.class, MPAStorage.class, MPARowMapper.class,
         GenreStorage.class, GenreRowMapper.class, DirectorStorage.class, DirectorRowMapper.class,
-        EventService.class, EventStorage.class, EventRowMapper.class})
+        EventStorage.class, EventRowMapper.class})
 @AutoConfigureTestDatabase
 class RecommendationsTest {
     private final UserService userService;

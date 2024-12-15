@@ -5,14 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.OperationType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.dto.RequestUpdateReviewDto;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -22,7 +26,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private final EventService eventService;
+    private final EventStorage eventStorage;
 
     /**
      * Create a review
@@ -46,13 +50,7 @@ public class ReviewService {
         // update fields in Review
         review.setReviewId(id);
         review.setUseful(0L);
-        eventService.createEvent(
-                review.getUserId(),
-                EventType.REVIEW,
-                OperationType.ADD,
-                review.getReviewId()
-        );
-
+        addNewEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, OperationType.ADD);
         return review;
     }
 
@@ -89,12 +87,7 @@ public class ReviewService {
         }
         review = reviewStorage.updateReview(review);
 
-        eventService.createEvent(
-                review.getUserId(),
-                EventType.REVIEW,
-                OperationType.UPDATE,
-                review.getReviewId()
-        );
+        addNewEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, OperationType.UPDATE);
 
         return review;
     }
@@ -105,12 +98,7 @@ public class ReviewService {
      * @param id
      */
     public void deleteById(Long id) {
-        eventService.createEvent(
-                reviewStorage.findById(id).get().getUserId(),
-                EventType.REVIEW,
-                OperationType.REMOVE,
-                id
-        );
+        addNewEvent(reviewStorage.findById(id).get().getUserId(), id, EventType.REVIEW, OperationType.REMOVE);
         reviewStorage.deleteById(id);
     }
 
@@ -180,5 +168,16 @@ public class ReviewService {
         }
 
         reviewStorage.deleteLike(reviewId, userId);
+    }
+
+    private void addNewEvent(Long userId, Long reviewId, EventType eventType, OperationType operationType) {
+        Event event = Event.builder()
+                .userId(userId)
+                .eventType(eventType)
+                .operation(operationType)
+                .timestamp(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .entityId(reviewId)
+                .build();
+        eventStorage.addEvent(event);
     }
 }

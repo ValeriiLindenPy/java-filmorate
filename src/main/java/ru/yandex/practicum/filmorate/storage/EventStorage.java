@@ -35,7 +35,7 @@ public class EventStorage {
     public void addEvent(Event event) {
         jdbc.update(
                 INSERT_EVENT_QUERY,
-                event.getEventId(),
+                generateEventId(),
                 event.getUserId(),
                 event.getEventType().name(),
                 event.getOperation().name(),
@@ -50,5 +50,13 @@ public class EventStorage {
 
     public List<Event> getAllEvents() {
         return jdbc.query(GET_ALL_EVENTS_QUERY, eventRowMapper);
+    }
+
+    private Long generateEventId() {
+        Long currentId = getAllEvents().stream()
+                .mapToLong(Event::getEventId)
+                .max()
+                .orElse(0);
+        return ++currentId;
     }
 }

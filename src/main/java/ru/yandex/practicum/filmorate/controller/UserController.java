@@ -6,12 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
@@ -23,7 +21,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final EventService eventService;
 
     @GetMapping
     public List<User> getAll() {
@@ -75,7 +72,7 @@ public class UserController {
 
     @GetMapping("{userId}/feed")
     public List<Event> getUserFeed(@PathVariable Long userId) {
-        return eventService.getEventsByUserId(userId);
+        return userService.getEventsByUserId(userId);
     }
 
     @GetMapping("/{id}/recommendations")
