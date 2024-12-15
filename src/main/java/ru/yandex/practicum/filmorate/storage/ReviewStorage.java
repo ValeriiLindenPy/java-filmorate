@@ -43,10 +43,6 @@ public class ReviewStorage {
     private final ReviewMapper mapper;
     private final JdbcTemplate jdbc;
 
-//TODO
-//    public List<Review> findAll() {
-//        return jdbc.query(FIND_ALL_QUERY, mapper);
-//    }
 
     public List<Review> findTop(long limit) {
         return jdbc.query(FIND_TOP_QUERY, mapper, limit);
