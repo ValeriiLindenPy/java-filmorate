@@ -94,7 +94,7 @@ public class UserService {
         Optional<User> user = userStorage.getById(userId);
         Optional<User> friend = userStorage.getById(friendId);
 
-        if (!user.isPresent() || !friend.isPresent()) {
+        if (user.isEmpty() || friend.isEmpty()) {
             log.error("One or both user IDs are invalid.");
             throw new NotFoundException("One or both users not found!");
         }
@@ -103,7 +103,15 @@ public class UserService {
         try {
             userStorage.addFriendship(userId, friendId);
             log.info("Friendship successfully added: {} -> {}", userId, friendId);
-            addNewEvent(userId,friendId, EventType.FRIEND, OperationType.ADD);
+
+            eventStorage.addEvent(Event.builder()
+                    .userId(userId)
+                    .eventType(EventType.FRIEND)
+                    .operation(OperationType.ADD)
+                    .timestamp(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                    .entityId(friendId)
+                    .build());
+
         } catch (DataAccessException e) {
             log.error("Failed to add friendship.", e);
             throw new ValidationException("Failed to add friendship: " + e.getMessage());
@@ -125,7 +133,7 @@ public class UserService {
         Optional<User> user = userStorage.getById(userId);
         Optional<User> friend = userStorage.getById(friendId);
 
-        if (!user.isPresent() || !friend.isPresent()) {
+        if (user.isEmpty() || friend.isEmpty()) {
             log.error("One or both user IDs are invalid.");
             throw new NotFoundException("One or both users not found!");
         }
@@ -134,15 +142,21 @@ public class UserService {
         try {
             userStorage.removeFriend(userId, friendId);
             log.info("Friendship successfully removed: {} -> {}", userId, friendId);
-            addNewEvent(userId, friendId, EventType.FRIEND, OperationType.REMOVE);
+
+            eventStorage.addEvent(Event.builder()
+                    .userId(userId)
+                    .eventType(EventType.FRIEND)
+                    .operation(OperationType.REMOVE)
+                    .timestamp(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                    .entityId(friendId)
+                    .build());
+
             return Map.of("friends", "You removed %s from friends".formatted(friend.get().getName()));
         } catch (DataAccessException e) {
             log.error("Failed to remove friendship.", e);
             throw new ValidationException("Failed to remove friendship: " + e.getMessage());
         }
     }
-
-
 
     /**
      * Retrieves a list of common friends between two users.
@@ -170,7 +184,7 @@ public class UserService {
      */
     public List<User> getFriends(Long userId) {
         log.trace("Validating user ID.");
-        if (!userStorage.getById(userId).isPresent()) {
+        if (userStorage.getById(userId).isEmpty()) {
             log.error("User ID {} not found.", userId);
             throw new NotFoundException("User not found!");
         }
@@ -182,7 +196,6 @@ public class UserService {
         return friends;
     }
 
-
     /**
      * Retrieves a list of events for a specific user.
      *
@@ -191,7 +204,6 @@ public class UserService {
      */
     public List<Event> getEventsByUserId(Long userId) {
         log.trace("Checking existence of user with ID {}", userId);
-        // Проверка, существует ли пользователь с заданным userId
         if (userStorage.getById(userId).isEmpty()) {
             log.warn("User with ID {} does not exist", userId);
             throw new NotFoundException("User with ID %s does not exist".formatted(userId));
@@ -225,18 +237,6 @@ public class UserService {
                 .max()
                 .orElse(0);
         return ++currentId;
-    }
-
-
-    private void addNewEvent(Long userId, Long friendId, EventType eventType, OperationType operationType) {
-        Event event = Event.builder()
-                .userId(userId)
-                .eventType(eventType)
-                .operation(operationType)
-                .timestamp(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
-                .entityId(friendId)
-                .build();
-        eventStorage.addEvent(event);
     }
 
     /**
@@ -281,39 +281,29 @@ public class UserService {
             throw new NotFoundException("User with ID " + userId + " not found");
         }
 
-        /*
-        Getting a table in the following format:
-
-        {
-            'userId1': [filmId1, filmId3],
-            'userId2': [filmId2, filmId3],
-            'userId3': [filmId1]
-        }
-         */
-
-        Map<Long, Set<Long>> usersLikes = new HashMap<>();
-
-
         List<Film> movies = filmStorage.getAll();
-        // add likes
+
+        // Add likes and update likeCount
         Map<Long, Set<Long>> filmsLikes = likeStorage.getAllFilmLikes();
         for (Film movie : movies) {
-            movie.setLikes(filmsLikes.getOrDefault(movie.getId(), new HashSet<>()));
+            Set<Long> likes = filmsLikes.getOrDefault(movie.getId(), new HashSet<>());
+            movie.setLikes(likes);
+            movie.setLikeCount(likes.size());
         }
 
-        //add genres
+        // Add genres
         Map<Long, Set<Genre>> filmGenres = genreStorage.getAllFilmsGenres();
         for (Film movie : movies) {
             Set<Genre> genres = filmGenres.getOrDefault(movie.getId(), new HashSet<>());
 
-            // Convert set to a list and sort by genre ID
             List<Genre> sortedGenres = new ArrayList<>(genres);
             sortedGenres.sort(Comparator.comparingLong(Genre::getId));
 
             movie.setGenres(new LinkedHashSet<>(sortedGenres));
         }
 
-        // Builds a map of user IDs to their liked film IDs.
+        // Build a map of user IDs to their liked film IDs
+        Map<Long, Set<Long>> usersLikes = new HashMap<>();
         for (Film film : movies) {
             for (Long id : film.getLikes()) {
                 usersLikes.computeIfAbsent(id, k -> new HashSet<>()).add(film.getId());
@@ -324,12 +314,11 @@ public class UserService {
             return Collections.emptyList();
         }
 
-        // Finds the user whose liked films most closely match the given user's liked films.
+        // Find the most similar user
         Long mostSimilarUserId = null;
         int maxOverlap = 0;
 
         for (Long id : usersLikes.keySet()) {
-            // Do not compare with itself.
             if (id.equals(userId)) {
                 continue;
             }
@@ -348,10 +337,12 @@ public class UserService {
             return Collections.emptyList();
         }
 
-        // Creating a list of recommended movies
         final Long userWithGreatestMatch = mostSimilarUserId;
         return movies.stream()
-                .filter(film -> usersLikes.get(userWithGreatestMatch).contains(film.getId()) && !usersLikes.get(userId).contains(film.getId()))
+                .filter(film -> usersLikes.get(userWithGreatestMatch).contains(film.getId())
+                        && !usersLikes.get(userId).contains(film.getId()))
+                .sorted(Comparator.comparingInt(Film::getLikeCount).reversed()) // Sort by likeCount
                 .toList();
     }
+
 }
