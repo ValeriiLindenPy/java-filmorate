@@ -1,27 +1,28 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.mapper.GenreRowMapper;
+
 import java.util.*;
 
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class GenreStorage {
-    private static final String FIND_ALL_GENRE_QUERY = "SELECT * FROM genres";
-    private static final String FIND_GENRE_BY_ID_QUERY = "SELECT * FROM genres WHERE id = ?";
-
     private final JdbcTemplate jdbc;
     private final GenreRowMapper mapper;
 
     public Optional<Genre> getById(Long id) {
         try {
-            Genre genre = jdbc.queryForObject(FIND_GENRE_BY_ID_QUERY, mapper, id);
+            String findGenreByIDQuery = "SELECT * FROM genres WHERE id = ?";
+            Genre genre = jdbc.queryForObject(findGenreByIDQuery, mapper, id);
             return Optional.of(genre);
         } catch (DataAccessException ignored) {
             return Optional.empty();
@@ -30,7 +31,8 @@ public class GenreStorage {
 
 
     public List<Genre> getAll() {
-        return jdbc.query(FIND_ALL_GENRE_QUERY, mapper);
+        String findAllGenreQuery = "SELECT * FROM genres";
+        return jdbc.query(findAllGenreQuery, mapper);
     }
 
     public void saveGenres(Film film) {
@@ -74,25 +76,26 @@ public class GenreStorage {
         String sql = "SELECT f.ID AS film_id, g.ID AS genre_id, g.NAME AS genre_name " +
                 "FROM FILMS f " +
                 "LEFT JOIN FILM_GENRES fg ON fg.FILM_ID = f.ID " +
-                "LEFT JOIN GENRES g ON g.ID = fg.GENRE_ID";
+                "LEFT JOIN GENRES g ON g.ID = fg.GENRE_ID " +
+                "ORDER BY g.ID ASC";
         Map<Long, Set<Genre>> filmGenres = new HashMap<>();
 
         jdbc.query(sql, rs -> {
-            while (rs.next()) {
-                Long filmId = rs.getLong("film_id");
-                Genre genre = Genre.builder()
-                        .id(rs.getLong("genre_id"))
-                        .name(rs.getString("genre_name"))
-                        .build();
-
+            Long filmId = rs.getLong("film_id");
+            Genre genre = Genre.builder()
+                    .id(rs.getLong("genre_id"))
+                    .name(rs.getString("genre_name"))
+                    .build();
+            if (!rs.wasNull()) {
                 filmGenres.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+                log.debug("Film ID  {} set genre {}", filmId, genre.getId());
+            } else {
+                log.debug("Film ID {} has no genres.", filmId);
             }
         });
 
         return filmGenres;
     }
-
-
 
 
 }

@@ -2,19 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationMarker;
-import ru.yandex.practicum.filmorate.service.film.FilmService;
-import ru.yandex.practicum.filmorate.service.like.LikeService;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
-@Slf4j
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
@@ -22,7 +20,7 @@ public class FilmController {
     private final LikeService likeService;
 
     @GetMapping
-    public Collection<Film> getAll() {
+    public List<Film> getAll() {
         return filmService.getAll();
     }
 
@@ -32,8 +30,21 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTop(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getTop(count);
+    public List<Film> getTop(@RequestParam(defaultValue = "10") int count,
+                             @RequestParam(required = false) Integer genreId,
+                             @RequestParam(required = false) Integer year) {
+        return filmService.getTop(count, genreId, year);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable Long directorId,
+                                         @RequestParam(defaultValue = "likes") String sortBy) {
+        return filmService.getFilmsByDirectorSorted(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping
@@ -56,5 +67,16 @@ public class FilmController {
     @PutMapping
     public Film update(@Validated(ValidationMarker.OnUpdate.class) @Valid @RequestBody Film newFilm) {
         return filmService.update(newFilm);
+    }
+
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        return filmService.search(query, by);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void removeFilm(@PathVariable long filmId) {
+        filmService.deleteById(filmId);
     }
 }

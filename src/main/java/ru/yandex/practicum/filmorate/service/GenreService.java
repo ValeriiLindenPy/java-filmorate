@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.genre;
+package ru.yandex.practicum.filmorate.service;
 
 
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -17,11 +17,11 @@ public class GenreService {
     private final GenreStorage genreStorage;
 
     /**
-     * Retrieves all films
+     * Retrieves all genres
      *
-     * @return {@link Collection<Genre>}
+     * @return {@link List<Genre>}
      */
-    public Collection<Genre> getAll() {
+    public List<Genre> getAll() {
         return genreStorage.getAll();
     }
 

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service.mpa;
+package ru.yandex.practicum.filmorate.service;
 
 
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -19,9 +19,9 @@ public class MPAService {
     /**
      * Retrieves all MPAs
      *
-     * @return {@link Collection<MPA>}
+     * @return {@link List<MPA>}
      */
-    public Collection<MPA> getAll() {
+    public List<MPA> getAll() {
         return mpaStorage.getAll();
     }
 

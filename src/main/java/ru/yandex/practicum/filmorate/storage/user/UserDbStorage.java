@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mapper.UserRowMapper;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,7 +96,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getFriends(Long userId) {
+    public List<User> getFriends(Long userId) {
         String getFriendsQuery =
                 "SELECT u.* FROM users u " +
                         "JOIN user_friendships uf ON u.id = uf.user2_id " +
